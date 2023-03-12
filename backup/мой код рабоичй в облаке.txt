@@ -1,0 +1,23 @@
+
+import pymysql
+import sys
+def handler(event, context):
+    try:
+        connection = pymysql.connect(
+            user = "user",
+            password="uJ9_ZIOavQ",
+            host="185.171.192.30",
+            port=3306,
+            database="alisa_gamerules")
+    except pymysql.Error as e:
+        print(f"Error connecting to MariaDB Platform: {e}")
+        sys.exit(1)
+
+    with connection.cursor() as cursor:
+            # Read a single record
+            #sql ="SELECT `text` FROM `Descriptions` WHERE name='Глубоководные'"
+            cursor.execute("SELECT `text` FROM `Descriptions` WHERE name='Глубоководные'")
+            result = cursor.fetchone()
+            print(result)
+            return type(result)
+

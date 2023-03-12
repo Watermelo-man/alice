@@ -1,0 +1,53 @@
+import mariadb
+
+def handler(event, context):
+
+    session_state = event["state"]["session"]
+    """
+    Entry-point for Serverless Function.
+    :param event: request payload.
+    :param context: information about current execution context.
+    :return: response to be serialized as JSON.
+    """
+    text = 'Привет!'
+    if 'request' in event and \
+            'original_utterance' in event['request'] \
+            and len(event['request']['original_utterance']) > 0:
+        
+        session_state['state'] += 1
+
+        try:
+            conn = mariadb.connect(
+                user = "user",
+                password="uJ9_ZIOavQ",
+                host="185.171.192.30",
+                port=3306,
+                database="alisa_gamerules"
+            )
+            cur = conn.cursor()
+
+            data = (event['request']['original_utterance'],)
+            query = 'SELECT `text` FROM `Descriptions` WHERE name=?'
+            cur.execute(query, data)
+            ret = cur.fetchone()[0]
+
+            cur.close()
+            conn.close()
+        except mariadb.Error as e:
+            text = "не получилось подключиться к БД"
+
+    else:
+        session_state['state'] = 1
+    
+
+    return {
+        'version': event['version'],
+        'session': event['session'],
+        "session_state": session_state,
+        'response': {
+            # Respond with the original request or welcome the user if this is the beginning of the dialog and the request has not yet been made.
+            'text': text,
+            # Don't finish the session after this response.
+            'end_session': 'false'
+        }
+    }

@@ -1,0 +1,66 @@
+{
+    "version": "1.0",
+    "session": {
+      "message_id": 9,
+      "session_id": "1adb5f0e-be0b-4d52-901a-ea6c7a98cf8b",
+      "skill_id": "e72b90d3-4512-43ba-be00-f2080fb678c8",
+      "user": {
+        "user_id": "D40CB55A178BA34329CF61E7AB9F28667115ED8F78BDC7D8F3E02FC2A8DC1694"
+      },
+      "application": {
+        "application_id": "EDB26A2C39AEF588C505AC2AC63FECDD2808B9CDDA60E98DD4713496593E9A5F"
+      },
+      "new": false,
+      "user_id": "EDB26A2C39AEF588C505AC2AC63FECDD2808B9CDDA60E98DD4713496593E9A5F"
+    },
+    "response": {
+      "text": "Вы можете либо получить две силы воплощения на текущий ход, либо обрести два очка рассудка. Вы можете лишить кого-нибудь пяти очков рассудка, но затем нужно отречься от \"Лечебницы Аркхэма\".",
+      "end_session": "false"
+    }
+  }
+  Request:
+  {
+    "meta": {
+      "locale": "ru-RU",
+      "timezone": "UTC",
+      "client_id": "ru.yandex.searchplugin/7.16 (none none; android 4.4.2)",
+      "interfaces": {
+        "screen": {},
+        "payments": {},
+        "account_linking": {}
+      }
+    },
+    "session": {
+      "message_id": 9,
+      "session_id": "1adb5f0e-be0b-4d52-901a-ea6c7a98cf8b",
+      "skill_id": "e72b90d3-4512-43ba-be00-f2080fb678c8",
+      "user": {
+        "user_id": "D40CB55A178BA34329CF61E7AB9F28667115ED8F78BDC7D8F3E02FC2A8DC1694"
+      },
+      "application": {
+        "application_id": "EDB26A2C39AEF588C505AC2AC63FECDD2808B9CDDA60E98DD4713496593E9A5F"
+      },
+      "new": false,
+      "user_id": "EDB26A2C39AEF588C505AC2AC63FECDD2808B9CDDA60E98DD4713496593E9A5F"
+    },
+    "request": {
+      "command": "как работает карта лечебница аркхэма",
+      "original_utterance": "Как работает карта лечебница аркхэма",
+      "nlu": {
+        "tokens": [
+          "как",
+          "работает",
+          "карта",
+          "лечебница",
+          "аркхэма"
+        ],
+        "entities": [],
+        "intents": {}
+      },
+      "markup": {
+        "dangerous_context": false
+      },
+      "type": "SimpleUtterance"
+    },
+    "version": "1.0"
+  }

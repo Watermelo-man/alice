@@ -1,0 +1,10 @@
+kek = ["1","2"]
+print(kek)
+
+kek = ["2","3"]
+print (kek)
+
+kek[0]="8"
+print(kek)
+kek = ["5"]
+print (kek)
