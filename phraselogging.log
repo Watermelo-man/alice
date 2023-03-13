@@ -1,0 +1,4 @@
+2023-03-13 21:06:11,284  session id: 4038e2d5-83e1-49a1-8914-556fb4439d7f
+user id: D40CB55A178BA34329CF61E7AB9F28667115ED8F78BDC7D8F3E02FC2A8DC1694
+request: \u0442\u044b \u043f\u0438\u0434\u043e\u0440str(event['request']['command'])
+response: str(list_arg[0])-----------------------------------

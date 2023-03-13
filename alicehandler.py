@@ -10,9 +10,9 @@ event = json.load(f)
 from base import *
 from meeting import *
 from requesthandler import *
+import telebot    
 
-    
-
+bot = telebot.TeleBot('6058714565:AAHPhL2Bs_i9lyYaf0bvqcL1e-RkOhH85fU')
 
 
 Meet = Meeting()
@@ -59,15 +59,20 @@ def handler(event,context):
         list_arg = Datarequest.scanRequest(str(request[0]))
       
 
-
-
-
+        
+        #bot.send_message(-1001609876238 , f"тест говна",message_thread_id = 453)
+        #первое это номер чата
+        flag = "not none"
+        #print(type(event["meta"]["interfaces"]["screen"]))
+        if event["meta"]["interfaces"]["screen"] == {}:
+            flag = "none"
+        msg = "session id: " + event["session"]["session_id"] + "\n\n" + "user_id: " + event["session"]["user"]["user_id"] + "\n\n" + "screen: " + flag + "\n\n" + "request: " + str(event['request']['command']) + "\n\n" + "response: "+ list_arg[0]
+        bot.send_message(-1001609876238 , msg ,message_thread_id = 453)
 
 
     #else:
         #session_state['state'] = 1
     
-
         return {
             'version': event['version'],
             'session': event['session'],
