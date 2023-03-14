@@ -35,3 +35,21 @@ class Base():
         cur.close()
         self.base.close()
         return text
+    
+    def getDescriptionsFromBase(self) ->list:
+        cur = self.base.cursor()
+        query = "SELECT Descriptions.name FROM Descriptions"
+        cur.execute(query)
+        ret = cur.fetchall()
+        
+        if ret == None:
+            text = "Простите, названия карт и свойств из базы не получены"
+            return list()
+
+        res=list()
+        for el in ret:
+            res.append(el[0])
+
+        cur.close()
+        self.base.close()
+        return res
