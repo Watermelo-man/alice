@@ -21,19 +21,15 @@ Datarequest = datarequest()
 
 def make_response(event, text, list_arg, next_state = None, end = False):
     if next_state == -1:
-        session_state = {
-            'state' : 96 # Вы уже играли в миры ктулху?
-        }
-    
-    elif next_state != none:
-        session_state = {
-            'state' : next_state
-        }
-    
+        current_state = 96 # Вы уже играли в миры ктулху?
+    elif next_state != None:
+        current_state = next_state
     else:
-        session_state = {
-            'state' : event["state"]["session"]["state"] # current state
-        }
+        current_state = event["state"]["session"]["state"]
+
+    session_state = {
+        'state' : current_state
+    }
 
     screen = "screen" in event["meta"]["interfaces"]
     #print(type(event["meta"]["interfaces"]["screen"]))
@@ -43,15 +39,27 @@ def make_response(event, text, list_arg, next_state = None, end = False):
     msg +=  "user_id: " + event["session"]["user"]["user_id"] + "\n\n"
     msg += "screen: " + str(screen) + "\n\n"
     msg += "request: " + str(event['request']['command']) + "\n\n"
-    msg += "response: "+ list_arg[0]
+    msg += "response: "+ text + "\n\n"
+    msg += "current_state=" + str(current_state)
     if (len(list_arg) > 2):
-        msg += "debug: "+ list_arg[2]
+        msg += "\n\ndebug: "+ str(list_arg[2])
     
 
 
 
     bot.send_message(-1001609876238 , msg ,message_thread_id = 453)
 
+    baseinstance = Base()
+    baseState = baseinstance.connect()
+    if baseState != 0:
+        next_states, next_states_descr, query = baseinstance.getNextStates(current_state)
+    else:
+        next_states = []
+        next_states_descr = []
+
+    session_state['next_states'] = next_states
+    session_state['next_states_col_descr'] = next_states_descr
+    
     return{
             'version': event['version'],
             'session': event['session'],
@@ -64,11 +72,11 @@ def make_response(event, text, list_arg, next_state = None, end = False):
 
 # start point
 def handler(event,context):
-    meetlist = Meet.responseToMeetState(event['session']['new'], event)
+    meetlist = Meet.responseToMeetState(event['session']['new'])
 
-    if meetlist != None:
+    if meetlist != [None, None]:
         Datarequest.isShtut = "false"
-        return make_response(event, meetlist[0], -1, meetlist[1])
+        return make_response(event, meetlist[0], meetlist, -1, meetlist[1])
 
     if 'request' in event and \
             'original_utterance' in event['request'] \
@@ -76,15 +84,6 @@ def handler(event,context):
         
         request = (event['request']['command'],)
         list_arg = Datarequest.scanRequest(str(request[0]))
-
-        # узнаём доступные переходы
-        baseinstance = Base()
-        baseState = baseinstance.connect("alisa_gamerules_test")
-        if baseState == 0:
-            return make_response(event, "не подключились к базе. попробуйте в другой раз.", list_arg, None, True)
-
-        # левенштейном сравнивать только с инпутами, доступными сейчас для перехода
-        next_states, next_states_descr = baseinstance.getNextStates(card)
 
         #первое это номер чата
         screen = "screen" in event["meta"]["interfaces"]
@@ -97,7 +96,7 @@ def handler(event,context):
         msg += "request: " + str(event['request']['command']) + "\n\n"
         msg += "response: "+ list_arg[0]
         if (len(list_arg) > 2):
-            msg += "debug: "+ list_arg[2]
+            msg += "debug: "+ query#list_arg[2]
         bot.send_message(-1001609876238 , msg ,message_thread_id = 453)
 
 

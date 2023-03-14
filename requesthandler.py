@@ -8,16 +8,13 @@ import regex
 
 import Levenshtein
 
-DATABASE_NAME = "alisa_gamerules_test"
-
-
 class datarequest():
     data = None
     isShtut = "false"
 
     def __init__(self) -> None:
         baseinstance = Base()
-        baseState = baseinstance.connect(DATABASE_NAME)
+        baseState = baseinstance.connect()
         if baseState == 0:
             return "не подключились к базе"
 
@@ -39,7 +36,7 @@ class datarequest():
         card_name = card_recognition(self.DESCRIPTIONS, card_from_Alice)
 
         baseinstance = Base()
-        baseState = baseinstance.connect(DATABASE_NAME)
+        baseState = baseinstance.connect()
         if baseState == 0:
             return "не подключились к базе"
         

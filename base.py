@@ -38,6 +38,7 @@ class Base():
 
     def getNextStates(self, current_outId:str):
         cur = self.base.cursor()
+        
 
         query = "WITH t AS(\
             SELECT\
@@ -56,14 +57,14 @@ class Base():
             FROM t\
             INNER JOIN outputs\
             ON t.next_out_id=outputs.id\
-            WHERE t.curOut_id=" + current_outId
+            WHERE t.curOut_id=" + str(current_outId)
         
-        cur.execute(query,card)
+        cur.execute(query)
         ret = cur.fetchall()
 
         cur.close()
         self.base.close()
-        return ret, ('input_id', 'input_text', 'next_out_id', 'next_out_text') #col_descriptions
+        return ret, ('input_id', 'input_text', 'next_out_id', 'next_out_text'), query #col_descriptions
         
     def getDescriptionsFromBase(self) ->list:
         cur = self.base.cursor()

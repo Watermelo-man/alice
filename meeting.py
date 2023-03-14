@@ -7,4 +7,4 @@ class Meeting():
         if state == True:
             return [self.text,'false']
         else:
-            return None
+            return [None, None]
