@@ -19,7 +19,7 @@ Meet = Meeting()
 
 Datarequest = datarequest()
 
-def make_response(event, text, next_state = None, end = False):
+def make_response(event, text, list_arg, next_state = None, end = False):
     if next_state == -1:
         session_state = {
             'state' : 96 # Вы уже играли в миры ктулху?
@@ -34,7 +34,23 @@ def make_response(event, text, next_state = None, end = False):
         session_state = {
             'state' : event["state"]["session"]["state"] # current state
         }
-        
+
+    screen = "screen" in event["meta"]["interfaces"]
+    #print(type(event["meta"]["interfaces"]["screen"]))
+    #if event["meta"]["interfaces"]["screen"] == {}:
+    #    flag = "none"
+    msg =   "session id: " + event["session"]["session_id"] + "\n\n"
+    msg +=  "user_id: " + event["session"]["user"]["user_id"] + "\n\n"
+    msg += "screen: " + str(screen) + "\n\n"
+    msg += "request: " + str(event['request']['command']) + "\n\n"
+    msg += "response: "+ list_arg[0]
+    if (len(list_arg) > 2):
+        msg += "debug: "+ list_arg[2]
+    
+
+
+
+    bot.send_message(-1001609876238 , msg ,message_thread_id = 453)
 
     return{
             'version': event['version'],
@@ -88,9 +104,9 @@ def handler(event,context):
     #else:
         #session_state['state'] = 1
     
-        return make_response(event, list_arg[0],list_arg[1])
+        return make_response(event, list_arg[0],list_arg,list_arg[1])
 
-    return make_response(event, list_arg[0],"не обработано")
+    return make_response(event, list_arg[0],list_arg,"не обработано")
 
 context = None
 handler(event,context)

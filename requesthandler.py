@@ -5,13 +5,27 @@ from base import *
 
 import string
 import regex
+
+import Levenshtein
+
+DATABASE_NAME = "alisa_gamerules_test"
+
+
 class datarequest():
     data = None
     isShtut = "false"
+
     def __init__(self) -> None:
-        pass
+        baseinstance = Base()
+        baseState = baseinstance.connect(DATABASE_NAME)
+        if baseState == 0:
+            return "не подключились к базе"
+
+        self.DESCRIPTIONS=baseinstance.getDescriptionsFromBase()
+
     def setData(self,data):
         self.data = data
+
     def getData(self):
         return self.data
     
@@ -19,15 +33,18 @@ class datarequest():
     def shut(self):
         self.isShtut = "true"
 
-    def howcardworks(card:str):
+    def howcardworks(self, card_from_Alice:str):
+
+        # Среди всех описаний из базы данных находим наиболее похожее с запрашиваемой Алисой картой
+        card_name = card_recognition(self.DESCRIPTIONS, card_from_Alice)
 
         baseinstance = Base()
-        baseState = baseinstance.connect("alisa_gamerules_test")
+        baseState = baseinstance.connect(DATABASE_NAME)
         if baseState == 0:
             return "не подключились к базе"
         
         #print(baseinstance.getCardDescFrombase(card))
-        return baseinstance.getCardDescFrombase(card)
+        return baseinstance.getCardDescFrombase(card_name)
         
 
 
@@ -69,7 +86,7 @@ class datarequest():
                         text = self.requestSamples[req[:self.requestLength[iterator]]](self) 
 
                 if arg != "":
-                    text = self.requestSamples[req[:self.requestLength[iterator]]](arg) 
+                    text = self.requestSamples[req[:self.requestLength[iterator]]](self,arg) 
                  
                 break
             iterator = iterator + 1
@@ -83,7 +100,19 @@ class datarequest():
             answer = ["До свидания!","true"]    
 
         return answer
-                
+
+
+def card_recognition(card_names: list, card_from_Alice: str) -> str:
+    card_distance_min = 65000
+    #min_distance_idx = len(card_names)
+
+    for i in range(len(card_names)):
+        current_distance = Levenshtein.distance(card_names[i], card_from_Alice)
+        if card_distance_min > current_distance:
+            card_distance_min = current_distance
+            min_distance_idx = i
+    
+    return card_names[min_distance_idx]
 
     
 '''
