@@ -1,5 +1,5 @@
 class Meeting():
-    text = 'Привет! Это навык для игры "Миры Ктулху!"'
+    text = 'Привет! Это навык для игры "миры Ктулху"!'
     idOutput = 1
     def __init__(self) -> None:
         pass

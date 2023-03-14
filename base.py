@@ -35,3 +35,32 @@ class Base():
         cur.close()
         self.base.close()
         return text
+
+    def getNextStates(self, current_outId:str):
+        cur = self.base.cursor()
+
+        query = "WITH t AS(\
+            SELECT\
+                States.outputs_id AS curOut_id,\
+                States.inputs_id AS input_id,\
+                inputs.text AS input_text,\
+                inputs.next_state AS next_out_id\
+            FROM States\
+            INNER JOIN inputs\
+                ON States.inputs_id=inputs.id)\
+            SELECT\
+                t.input_id,\
+                t.input_text,\
+                t.next_out_id,\
+                outputs.text AS next_out_text\
+            FROM t\
+            INNER JOIN outputs\
+            ON t.next_out_id=outputs.id\
+            WHERE t.curOut_id=" + current_outId
+        
+        cur.execute(query,card)
+        ret = cur.fetchall()
+
+        cur.close()
+        self.base.close()
+        return ret, ('input_id', 'input_text', 'next_out_id', 'next_out_text') #col_descriptions

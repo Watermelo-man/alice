@@ -19,11 +19,27 @@ Meet = Meeting()
 
 Datarequest = datarequest()
 
-def make_response(event, text, end = False):
+def make_response(event, text, next_state = None, end = False):
+    if next_state == -1:
+        session_state = {
+            'state' : 96 # Вы уже играли в миры ктулху?
+        }
+    
+    elif next_state != none:
+        session_state = {
+            'state' : next_state
+        }
+    
+    else:
+        session_state = {
+            'state' : event["state"]["session"]["state"] # current state
+        }
+        
+
     return{
             'version': event['version'],
             'session': event['session'],
-            #"session_state": session_state,
+            "session_state": session_state,
             'response': {
                 'text': text,
                 'end_session': end
@@ -32,9 +48,7 @@ def make_response(event, text, end = False):
 
 # start point
 def handler(event,context):
-    meetlist = Meet.responseToMeetState(event['session']['new'])
-
-    
+    meetlist = Meet.responseToMeetState(event['session']['new'], event)
 
     if meetlist != None:
         Datarequest.isShtut = "false"
@@ -45,13 +59,16 @@ def handler(event,context):
             and len(event['request']['command']) > 0:
         
         request = (event['request']['command'],)
-
-
-
         list_arg = Datarequest.scanRequest(str(request[0]))
-      
 
-        
+        # узнаём доступные переходы
+        baseinstance = Base()
+        baseState = baseinstance.connect("alisa_gamerules_test")
+        if baseState == 0:
+            return make_response(event, "не подключились к базе. попробуйте в другой раз.", True)
+
+        # левенштейном сравнивать только с инпутами, доступными сейчас для перехода
+        next_states, next_states_descr = baseinstance.getNextStates(card)
 
         #первое это номер чата
         screen = "screen" in event["meta"]["interfaces"]
@@ -72,7 +89,7 @@ def handler(event,context):
         #session_state['state'] = 1
     
         return make_response(event, list_arg[0],list_arg[1])
-        
+
     return make_response(event, list_arg[0],"не обработано")
 
 context = None
