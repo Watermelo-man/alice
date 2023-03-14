@@ -19,7 +19,25 @@ Meet = Meeting()
 
 Datarequest = datarequest()
 
-def make_response(event, text, end = False):
+def make_response(event, text, list_arg , end = False):
+
+    screen = "screen" in event["meta"]["interfaces"]
+    #print(type(event["meta"]["interfaces"]["screen"]))
+    #if event["meta"]["interfaces"]["screen"] == {}:
+    #    flag = "none"
+    msg =   "session id: " + event["session"]["session_id"] + "\n\n"
+    msg +=  "user_id: " + event["session"]["user"]["user_id"] + "\n\n"
+    msg += "screen: " + str(screen) + "\n\n"
+    msg += "request: " + str(event['request']['command']) + "\n\n"
+    msg += "response: "+ list_arg[0]
+    if (len(list_arg) > 2):
+        msg += "debug: "+ list_arg[2]
+    
+
+
+
+    bot.send_message(-1001609876238 , msg ,message_thread_id = 453)
+
     return{
             'version': event['version'],
             'session': event['session'],
@@ -51,7 +69,7 @@ def handler(event,context):
         list_arg = Datarequest.scanRequest(str(request[0]))
       
 
-        
+        '''
 
         #первое это номер чата
         screen = "screen" in event["meta"]["interfaces"]
@@ -65,15 +83,18 @@ def handler(event,context):
         msg += "response: "+ list_arg[0]
         if (len(list_arg) > 2):
             msg += "debug: "+ list_arg[2]
-        bot.send_message(-1001609876238 , msg ,message_thread_id = 453)
+
+        '''
+            
+
 
 
     #else:
         #session_state['state'] = 1
     
-        return make_response(event, list_arg[0],list_arg[1])
+        return make_response(event, list_arg[0],list_arg,list_arg[1])
         
-    return make_response(event, list_arg[0],"не обработано")
+    return make_response(event, list_arg[0],list_arg,"не обработано")
 
 context = None
 handler(event,context)

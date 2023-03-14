@@ -6,7 +6,7 @@ class Base():
     
     def __init__(self) -> None:
             pass
-    def connect(self,base_source = "alisa_gamerules"):
+    def connect(self,base_source = "alisa_gamerules_test"):
             try:
                 conn = pymysql.connect(
                     user = "user",
