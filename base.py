@@ -23,7 +23,7 @@ class Base():
             
     def getCardDescFrombase(self,card:str):
         cur = self.base.cursor()
-        query = "SELECT `text` FROM `Descriptions` WHERE name= %s"
+        query = "SELECT Descriptions.text FROM Descriptions INNER JOIN synonyms ON Descriptions.id=synonyms.description_id WHERE synonyms.synonym= %s"
         cur.execute(query,card)
         ret = cur.fetchone()
 
