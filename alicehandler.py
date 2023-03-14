@@ -19,8 +19,8 @@ Meet = Meeting()
 
 Datarequest = datarequest()
 
-def make_response(text, end = False):
-    response_template = {
+def make_response(event, text, end = False):
+    return{
             'version': event['version'],
             'session': event['session'],
             #"session_state": session_state,
@@ -38,7 +38,7 @@ def handler(event,context):
 
     if meetlist != None:
         Datarequest.isShtut = "false"
-        return make_response(meetlist[0], meetlist[1])
+        return make_response(event, meetlist[0], meetlist[1])
 
     if 'request' in event and \
             'original_utterance' in event['request'] \
@@ -63,7 +63,7 @@ def handler(event,context):
         msg += "screen: " + str(screen) + "\n\n"
         msg += "request: " + str(event['request']['command']) + "\n\n"
         msg += "response: "+ list_arg[0]
-        if (len(list_arg) > 2)
+        if (len(list_arg) > 2):
             msg += "debug: "+ list_arg[2]
         bot.send_message(-1001609876238 , msg ,message_thread_id = 453)
 
@@ -71,8 +71,9 @@ def handler(event,context):
     #else:
         #session_state['state'] = 1
     
-        return make_response(list_arg[0],list_arg[1])
-    
+        return make_response(event, list_arg[0],list_arg[1])
+        
+    return make_response(event, list_arg[0],"не обработано")
 
 context = None
 handler(event,context)
