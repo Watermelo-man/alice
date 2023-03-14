@@ -68,7 +68,7 @@ def handler(event,context):
 
     if meetlist != None:
         Datarequest.isShtut = "false"
-        return make_response(event, meetlist[0], meetlist[1])
+        return make_response(event, meetlist[0], -1, meetlist[1])
 
     if 'request' in event and \
             'original_utterance' in event['request'] \
@@ -81,7 +81,7 @@ def handler(event,context):
         baseinstance = Base()
         baseState = baseinstance.connect("alisa_gamerules_test")
         if baseState == 0:
-            return make_response(event, "не подключились к базе. попробуйте в другой раз.", True)
+            return make_response(event, "не подключились к базе. попробуйте в другой раз.", list_arg, None, True)
 
         # левенштейном сравнивать только с инпутами, доступными сейчас для перехода
         next_states, next_states_descr = baseinstance.getNextStates(card)
@@ -103,10 +103,9 @@ def handler(event,context):
 
     #else:
         #session_state['state'] = 1
-    
-        return make_response(event, list_arg[0],list_arg,list_arg[1])
+        return make_response(event, list_arg[0], list_arg, None, list_arg[1])
 
-    return make_response(event, list_arg[0],list_arg,"не обработано")
+    return make_response(event, "не обработано", list_arg, None, list_arg[0])
 
 context = None
 handler(event,context)
