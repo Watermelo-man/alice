@@ -30,7 +30,7 @@ class datarequest():
     def shut(self):
         self.isShtut = "true"
 
-    def howcardworks(self, card_from_Alice:str):
+    def getCardDescription(self, card_from_Alice:str):
 
         # Среди всех описаний из базы данных находим наиболее похожее с запрашиваемой Алисой картой
         card_name = card_recognition(self.DESCRIPTIONS, card_from_Alice)
@@ -44,8 +44,19 @@ class datarequest():
         return baseinstance.getCardDescFrombase(card_name)
         
 
+    def getSkillFromBase(self,skill_from_Alice:str):
+        card_name = card_recognition(self.DESCRIPTIONS, skill_from_Alice)
 
-    requestSamples = {'как работает карта':howcardworks,'как работает карта':howcardworks,'алиса что делает эта карта':howcardworks,'алиса хватит':shut,'хватит':shut}
+        baseinstance = Base()
+        baseState = baseinstance.connect()
+        if baseState == 0:
+            return "не подключились к базе"
+        
+        #print(baseinstance.getCardDescFrombase(card))
+        return baseinstance.getSkillDescFrombase(card_name)
+
+
+    requestSamples = {'как работает карта':getCardDescription,'как работает свойство':getSkillFromBase,'что делает эта карта':getCardDescription,'что делает':getCardDescription,'алиса хватит':shut,'хватит':shut}
     requestLength = []
     #requestSmaples['Алиса, напиши говно']()
     for key in requestSamples:                  #это не решение, это пиздец. создаем список с длиной каждого ключа

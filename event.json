@@ -23,8 +23,8 @@
     "user_id": "EDB26A2C39AEF588C505AC2AC63FECDD2808B9CDDA60E98DD4713496593E9A5F"
   },
   "request": {
-    "command": "нет",
-    "original_utterance": "нет",
+    "command": "как работает карта дагон",
+    "original_utterance": "как работает врчить кту",
     "nlu": {
       "tokens": [
         "нет"

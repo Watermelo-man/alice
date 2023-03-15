@@ -26,15 +26,35 @@ class Base():
         query = "SELECT Descriptions.text FROM Descriptions INNER JOIN synonyms ON Descriptions.id=synonyms.description_id WHERE synonyms.synonym= %s"
         cur.execute(query,card)
         ret = cur.fetchone()
-
+        
         if ret != "" and ret != None:
             text = str(ret[0])
+
         else:
             text = "Простите, не расслышала название карты"
 
         cur.close()
         self.base.close()
         return text
+
+
+    def getSkillDescFrombase(self,skill:str):
+        cur = self.base.cursor()
+        query = "SELECT Descriptions.text FROM Descriptions INNER JOIN synonyms ON Descriptions.id=synonyms.description_id WHERE synonyms.synonym= %s"
+        cur.execute(query,skill)
+        ret = cur.fetchone()
+        
+        if ret != "" and ret != None:
+            text = str(ret[0])
+
+        else:
+            text = "Простите, не расслышала название свойства"
+
+        cur.close()
+        self.base.close()
+        return text
+
+
 
     def getNextStates(self, current_outId:str):
         cur = self.base.cursor()

@@ -51,7 +51,6 @@ def make_response(event, text, list_arg, next_state = None, end = False):
     
 
 
-
     bot.send_message(-1001609876238 , msg ,message_thread_id = 453)
 
     baseinstance = Base()
@@ -86,6 +85,12 @@ def make_response(event, text, list_arg, next_state = None, end = False):
 def handler(event,context):
     bot.send_message(-1001609876238 , "request = " + str(event) ,message_thread_id = 453)#debug
 
+
+
+
+
+    
+
     global start_state 
     # обработка входа в сценарий
     if event['session']['new'] == True:
@@ -103,6 +108,10 @@ def handler(event,context):
         
         request = (event['request']['command'],)
 
+
+        # обработка команд
+        list_arg = Datarequest.scanRequest(str(request[0]))
+        
         # обработка переходов
         baseinstance = Base()
         foundNextState = None
@@ -115,8 +124,7 @@ def handler(event,context):
             if foundNextState != None:
                 return make_response(event, None, [None,None,str(foundNextState)], foundNextState, False)
 
-        # обработка команд
-        list_arg = Datarequest.scanRequest(str(request[0]))
+       
 
         return make_response(event, list_arg[0], list_arg, None, list_arg[1])
 
