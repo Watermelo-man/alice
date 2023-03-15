@@ -66,7 +66,7 @@ class Base():
         
     def getDescriptionsFromBase(self) ->list:
         cur = self.base.cursor()
-        query = "SELECT synonyms.synonym FROM synonym"
+        query = "SELECT synonyms.synonym FROM synonyms"
         cur.execute(query)
         ret = cur.fetchall()
         
