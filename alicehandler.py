@@ -1,4 +1,4 @@
- 
+
 import json
 
 f = open('event.json',encoding='utf-8')
@@ -88,7 +88,6 @@ def make_response(event, text, list_arg, next_state = None, end = False):
 def handler(event,context):
     # обработка входа в сценарий
     bot.send_message(-1001609876238 , "request = " + str(event) ,message_thread_id = 453)#debug
-    if event['session']['new'] == True:
     # обработка входа в сценарий
     if event['session']['new'] == True:
         Datarequest.isShtut = "false"
@@ -118,6 +117,7 @@ def handler(event,context):
                 return make_response(event, None, [None,None,str(foundNextState)], foundNextState, False)
 
         # обработка команд
+        list_arg = Datarequest.scanRequest(str(request[0]))
 
         # обработка переходов
         baseinstance = Base()
@@ -133,8 +133,6 @@ def handler(event,context):
             msg += "debug: "+ str(list_arg[2])
         bot.send_message(-1001609876238 , msg ,message_thread_id = 453)
 
-        # обработка команд
-        list_arg = Datarequest.scanRequest(str(request[0]))
 
         return make_response(event, list_arg[0], list_arg, 'None', list_arg[1])
 
