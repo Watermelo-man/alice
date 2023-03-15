@@ -38,8 +38,6 @@ class Base():
 
     def getNextStates(self, current_outId:str):
         cur = self.base.cursor()
-        
-
         query = "WITH t AS(\
             SELECT\
                 States.outputs_id AS curOut_id,\
@@ -64,7 +62,7 @@ class Base():
 
         cur.close()
         self.base.close()
-        return ret, ('input_id', 'input_text', 'next_out_id', 'next_out_text'), query #col_descriptions
+        return ret, ('input_id', 'input_text', 'next_out_id', 'next_out_text'), query
         
     def getDescriptionsFromBase(self) ->list:
         cur = self.base.cursor()
@@ -73,7 +71,7 @@ class Base():
         ret = cur.fetchall()
         
         if ret == None:
-            text = "Простите, названия карт и свойств из базы не получены"
+            text = "Названия карт и свойств из базы не получены. Попробуйте позже"
             return list()
 
         res=list()
@@ -83,3 +81,30 @@ class Base():
         cur.close()
         self.base.close()
         return res
+
+    def getStateOut(self, current_outId:str) -> str:
+        cur = self.base.cursor()
+        query = "SELECT text FROM outputs WHERE id=" + str(current_outId)
+        
+        cur.execute(query)
+        ret = cur.fetchone()
+
+        cur.close()
+        self.base.close()
+        return ret[0]
+
+    def getNextState_byText(self, text:str, currentState:str):
+        cur = self.base.cursor()
+        query = 'SELECT inputs.next_state from inputs \
+        INNER JOIN States ON States.inputs_id = inputs.id \
+        WHERE inputs.text="' + str(text) + '" AND States.outputs_id=' + str(currentState)
+        
+        cur.execute(query)
+        ret = cur.fetchone()
+
+        cur.close()
+        self.base.close()
+        if ret == None:
+            return None
+        else:
+            return ret[0]
