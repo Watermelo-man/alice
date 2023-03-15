@@ -30,7 +30,7 @@ class Base():
         if ret != "" and ret != None:
             text = str(ret[0])
         else:
-            text = "Простите, не знаю такой карты"
+            text = "Простите, не расслышала название карты"
 
         cur.close()
         self.base.close()
@@ -66,7 +66,7 @@ class Base():
         
     def getDescriptionsFromBase(self) ->list:
         cur = self.base.cursor()
-        query = "SELECT Descriptions.name FROM Descriptions"
+        query = "SELECT synonyms.synonym FROM synonym"
         cur.execute(query)
         ret = cur.fetchall()
         

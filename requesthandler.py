@@ -109,7 +109,11 @@ def card_recognition(card_names: list, card_from_Alice: str) -> str:
             card_distance_min = current_distance
             min_distance_idx = i
     
-    return card_names[min_distance_idx]
+    treshhold_condition = card_distance_min < len(card_names[min_distance_idx])/2
+
+    ret = card_names[min_distance_idx] if treshhold_condition else ""
+
+    return ret
 
     
 '''
