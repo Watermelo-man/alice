@@ -14,6 +14,7 @@ bot = telebot.TeleBot('6058714565:AAHPhL2Bs_i9lyYaf0bvqcL1e-RkOhH85fU')
 Datarequest = datarequest()
 start_state = 107
 
+# отвечаем пользователю
 def make_response(event, text, list_arg, next_state = None, end = False):
     global start_state
     if "state" in event and "session" in event["state"] and "state" in event["state"]["session"]:
@@ -64,10 +65,12 @@ def make_response(event, text, list_arg, next_state = None, end = False):
     session_state['next_states'] = next_states
     session_state['next_states_col_descr'] = next_states_descr
     
+    # добавляем кнопки возможных переходов
     buttons = []
     for row in next_states:
-        buttons.append({ "title": row[next_states_descr.index('input_text')],
-        "payload": {row[next_states_descr.index('next_out_id')]}, "hide": True })
+        if 'delete' != row[next_states_descr.index('input_text')]:
+            buttons.append({ "title": row[next_states_descr.index('input_text')],
+            "payload": {row[next_states_descr.index('next_out_id')]}, "hide": True })
 
     return{
             'version': event['version'],
