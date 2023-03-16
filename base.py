@@ -70,8 +70,7 @@ class Base():
             SELECT\
                 t.input_id,\
                 t.input_text,\
-                t.next_out_id,\
-                outputs.text AS next_out_text\
+                t.next_out_id\
             FROM t\
             INNER JOIN outputs\
             ON t.next_out_id=outputs.id\
@@ -82,7 +81,7 @@ class Base():
 
         cur.close()
         self.base.close()
-        return ret, ('input_id', 'input_text', 'next_out_id', 'next_out_text'), query
+        return ret, ('input_id', 'input_text', 'next_out_id'), query
         
     def getDescriptionsFromBase(self) ->list:
         cur = self.base.cursor()

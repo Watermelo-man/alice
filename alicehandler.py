@@ -54,6 +54,23 @@ def make_response(event, text, debug = {}, next_state = None, end = False):
         'state' : current_state
     }
 
+    context_types = ("start", "cards_preparing", "store_preparing", "first_steps", "game step")
+
+    # цепляем предыдущие флаги
+    if event["session"]["new"] == False:
+        session_state['flags'] = event['state']['session']['flags']
+    else:
+        session_state['flags'] = \
+        {
+            'context' : context_types[0],
+            'from_about_app' : False,
+            'card_info_explained' : False
+        }
+
+    # если мы уже не в сценарии сохранить куда возвращаться
+    if 'return_state' in session_state['flags']:
+        session_state['flags']['return_state'] = session_state['flags']['return_state'];
+
     if baseinstance.connect():
         next_states, next_states_descr, query = baseinstance.getNextStates(current_state)
     else:
@@ -62,6 +79,7 @@ def make_response(event, text, debug = {}, next_state = None, end = False):
 
     session_state['next_states'] = next_states
     session_state['next_states_col_descr'] = next_states_descr
+    
     
     # добавляем кнопки возможных переходов
     buttons = []
@@ -90,8 +108,9 @@ def handler(event,context):
     debug = {}
     baseinstance = Base()
 
-    # отправляем лог реквеста
-    bot.send_message(-1001609876238 , "request = " + str(event) ,message_thread_id = 453)#debug
+    # отправляем лог реквеста (возможно это вносит вклад в падения по таймауту)
+    # можно подумать про формирование отдельного потока для отправки логов
+    #bot.send_message(-1001609876238 , "request = " + str(event) ,message_thread_id = 453)#debug
 
     global start_state 
     # обработка входа в сценарий
