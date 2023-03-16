@@ -1,6 +1,3 @@
-
-
-
 from base import *
 
 import string
@@ -71,17 +68,21 @@ class datarequest():
     def tokenscanRequest():
         '''
 
-
+    # возвращаем текст, флаг выхода, отладочную инфу
     def scanRequest(self,req:str):  
         #сканируем команду формы функция - аргумент вот так :
         #сравниваем инпут, отрезая от него предполагаемую функцию по длине строки
+
+        if (self.isShtut == "true"):
+            return "До свидания!", "true", {} # text, endflag, debug
+            
+        text  = "Извините, запрос непонятен"
+        end = "false"
+        debug = {}
+        
         iterator = 0
-        requestIsgood = False
-    
         for request in self.requestSamples:
             if request == req[:self.requestLength[iterator]]:#заменить на findall или на работу по токенам
-                requestIsgood = True
-
                 arg = str(req[self.requestLength[iterator]:].lstrip())
 
 
@@ -99,15 +100,7 @@ class datarequest():
                 break
             iterator = iterator + 1
 
-        if (requestIsgood == False): 
-            text  = "Извините, запрос непонятен"
-
-        if (self.isShtut == "false"):
-            answer = [text,"false"]
-        elif (self.isShtut == "true"):
-            answer = ["До свидания!","true"]    
-
-        return answer
+        return text, end, debug
 
 
 def card_recognition(card_names: list, card_from_Alice: str) -> str:
