@@ -15,9 +15,14 @@ Datarequest = datarequest()
 start_state = 107
 
 # отвечаем пользователю
-def make_response(event, text, debug = {}, next_state = None, end = False):
+def make_response(event, text, debug = {}, next_state = None, end = False, isfeedback = False):
     global start_state
     baseinstance = Base()
+
+    if isfeedback:
+        bot.send_message(-1001609876238 , "Напиши разработчикам " + text ,message_thread_id = 1896)
+        text = "Хорошо, я передам"
+
 
     # обработка первого состояния
     if event["session"]["new"]:
@@ -55,7 +60,7 @@ def make_response(event, text, debug = {}, next_state = None, end = False):
     }
 
     context_types = ("start", "cards_preparing", "store_preparing", "first_steps", "game step")
-
+   
     # цепляем предыдущие флаги
     if event["session"]["new"] == False:
         session_state['flags'] = event['state']['session']['flags']
@@ -63,8 +68,8 @@ def make_response(event, text, debug = {}, next_state = None, end = False):
         session_state['flags'] = \
         {
             'context' : context_types[0],
-            'from_about_app' : False,
-            'card_info_explained' : False
+            'from_about_app' : False, 
+            'card_info_explained' : 0 
         }
 
     # если мы уже не в сценарии сохранить куда возвращаться
@@ -90,6 +95,8 @@ def make_response(event, text, debug = {}, next_state = None, end = False):
     
     # ---
 
+
+    
     return{
             'version': event['version'],
             'session': event['session'],
@@ -139,9 +146,9 @@ def handler(event,context):
                 return make_response(event, None, debug, next_state, False)
 
         # обработка команд
-        text, end, debug = Datarequest.scanRequest(str(command))
+        text, end, debug, isfeedback = Datarequest.scanRequest(str(command))
 
-    return make_response(event, text, debug, None, end)
+    return make_response(event, text, debug, None, end , isfeedback)
 
 context = None
 handler(event,context)

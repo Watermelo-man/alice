@@ -8,6 +8,7 @@ import Levenshtein
 class datarequest():
     data = None
     isShtut = "false"
+    isfeedback = False
 
     def __init__(self) -> None:
         baseinstance = Base()
@@ -41,6 +42,10 @@ class datarequest():
         return baseinstance.getCardDescFrombase(card_name)
         
 
+    def giveFeedback(self, feedb:str):
+        self.isfeedback = True
+        return feedb
+
     def getSkillFromBase(self,skill_from_Alice:str):
         card_name = card_recognition(self.DESCRIPTIONS, skill_from_Alice)
 
@@ -53,7 +58,10 @@ class datarequest():
         return baseinstance.getSkillDescFrombase(card_name)
 
 
-    requestSamples = {'как работает карта':getCardDescription,'как работает свойство':getSkillFromBase,'что делает эта карта':getCardDescription,'что делает':getCardDescription,'алиса хватит':shut,'хватит':shut}
+    requestSamples = {'как работает карта':getCardDescription,'как работает свойство':getSkillFromBase,\
+                      'что делает эта карта':getCardDescription,'что делает':getCardDescription,\
+                        'алиса хватит':shut,'хватит':shut,\
+                            'напиши разработчикам': giveFeedback}
     requestLength = []
     #requestSmaples['Алиса, напиши говно']()
     for key in requestSamples:                  #это не решение, это пиздец. создаем список с длиной каждого ключа
@@ -72,7 +80,7 @@ class datarequest():
     def scanRequest(self,req:str):  
         #сканируем команду формы функция - аргумент вот так :
         #сравниваем инпут, отрезая от него предполагаемую функцию по длине строки
-
+        self.isfeedback = False
         if (self.isShtut == "true"):
             return "До свидания!", "true", {} # text, endflag, debug
             
@@ -80,6 +88,9 @@ class datarequest():
         end = "false"
         debug = {}
         
+
+
+
         iterator = 0
         for request in self.requestSamples:
             if request == req[:self.requestLength[iterator]]:#заменить на findall или на работу по токенам
@@ -100,7 +111,7 @@ class datarequest():
                 break
             iterator = iterator + 1
 
-        return text, end, debug
+        return text, end, debug ,self.isfeedback
 
 
 def card_recognition(card_names: list, card_from_Alice: str) -> str:
