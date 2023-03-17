@@ -5,15 +5,14 @@ class Base():
     
     def __init__(self) -> None:
             pass
-    def connect(self,base_source = "alisa_gamerules",timeout_read = 1):
+    def connect(self,base_source = "alisa_gamerules"):
             try:
                 conn = pymysql.connect(
                     user = "user",
                     password="uJ9_ZIOavQ",
                     host="185.171.192.30",
                     port=3306,
-                    database=base_source,
-                    read_timeout = timeout_read
+                    database=base_source
                 )
                 self.base = conn
                 return 1 #"подключение успешно!"

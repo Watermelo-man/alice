@@ -1,3 +1,6 @@
+
+
+
 from base import *
 
 import string
@@ -6,9 +9,7 @@ import regex
 import Levenshtein
 
 class datarequest():
-    data = None
-    isShtut = "false"
-    isfeedback = False
+    # isShtut = "false"
 
     def __init__(self) -> None:
         baseinstance = Base()
@@ -17,21 +18,15 @@ class datarequest():
             return "не подключились к базе"
 
         self.DESCRIPTIONS=baseinstance.getDescriptionsFromBase()
-
-    def setData(self,data):
-        self.data = data
-
-    def getData(self):
-        return self.data
     
       
-    def shut(self):
-        self.isShtut = "true"
+    # def shut(self):
+    #     self.isShtut = "true"
 
-    def getCardDescription(self, card_from_Alice:str):
+    def getCardDescription(self):
 
         # Среди всех описаний из базы данных находим наиболее похожее с запрашиваемой Алисой картой
-        card_name = levenshtein_recognition(self.DESCRIPTIONS, card_from_Alice)
+        card_name = card_recognition(self.DESCRIPTIONS, self.from_Alice)
 
         baseinstance = Base()
         baseState = baseinstance.connect()
@@ -42,11 +37,8 @@ class datarequest():
         return baseinstance.getCardDescFrombase(card_name)
         
 
-    def giveFeedback(self, feedb:str):
-        self.isfeedback = True
-        return feedb
-
-    def getSkillFromBase(self,skill_from_Alice:str):
+    def getSkillFromBase(self):
+        card_name = card_recognition(self.DESCRIPTIONS, self.from_Alice)
         card_name = levenshtein_recognition(self.DESCRIPTIONS, skill_from_Alice)
 
         baseinstance = Base()
@@ -57,11 +49,35 @@ class datarequest():
         #print(baseinstance.getCardDescFrombase(card))
         return baseinstance.getSkillDescFrombase(card_name)
 
+    def help_f(self):
+        return "ещё не доделали"
 
-    requestSamples = {'как работает карта':getCardDescription,'как работает свойство':getSkillFromBase,\
-                      'что делает эта карта':getCardDescription,'что делает':getCardDescription,\
-                        'алиса хватит':shut,'хватит':shut,\
-                            'напиши разработчикам': giveFeedback}
+    def repeat(self):
+        baseinstance = Base()
+        baseState = baseinstance.connect()
+        if baseState == 0:
+            return "не подключились к базе"
+        return getStateOut(self.cur_state)
+
+    def feedback(self):
+        return "ещё не доделали"
+
+    def about(self):
+        return "ещё не доделали"
+
+    requestSamples = {
+            'как работает карта':       { "func" : getCardDescription,  "commandhandler" : "card_info"    },
+            'как работает свойство':    { "func" : getSkillFromBase  ,  "commandhandler" : "act_info"     },
+            'что делает эта карта':     { "func" : getCardDescription,  "commandhandler" : "card_info"    },
+            'что делает':               { "func" : getCardDescription,  "commandhandler" : "card_info"    },
+            'помощь':                   { "func" : help_f            ,  "commandhandler" : "help"         },
+            'повтори':                  { "func" : repeat            ,  "commandhandler" : "repeat"       },
+            'напиши разработчику':      { "func" : feedback          ,  "commandhandler" : "feedback"     },
+            'что ты умеешь?':           { "func" : about             ,  "commandhandler" : "about_app"    }
+            # 'алиса хватит':shut,
+            # 'хватит':shut,
+        }
+
     requestLength = []
     #requestSmaples['Алиса, напиши говно']()
     for key in requestSamples:                  #это не решение, это пиздец. создаем список с длиной каждого ключа
@@ -77,41 +93,48 @@ class datarequest():
         '''
 
     # возвращаем текст, флаг выхода, отладочную инфу
-    def scanRequest(self,req:str):  
+    def scanRequest(self,req:str, current_state):
+        self.cur_state = current_state
         #сканируем команду формы функция - аргумент вот так :
         #сравниваем инпут, отрезая от него предполагаемую функцию по длине строки
-        self.isfeedback = False
-        if (self.isShtut == "true"):
-            return "До свидания!", "true", {} # text, endflag, debug
+
+        # if (self.isShtut == "true"):
+        #     return "До свидания!", "true", {} # text, endflag, debug
             
-        text  = "Извините, запрос непонятен"
+        text = "Извините, запрос непонятен"
         end = "false"
+        cmd = None
         debug = {}
+
+        # min_distance_key = self.requestSamples['помощь']
+        # card_distance_min = Levenshtein.distance('помощь', req)
         
-
-
-
+        # for key in self.requestSamples.keys():
+        #     current_distance = Levenshtein.distance(key, req)
+        #     if card_distance_min > current_distance:
+        #         card_distance_min = current_distance
+        #         min_distance_key = key
+        
+        # if card_distance_min < len(min_distance_key)/2:
+        #     text = self.requestSamples[min_distance_key]["func"](self)
+        #     cmd = self.requestSamples[min_distance_key]["commandhandler"]
+        
         iterator = 0
-        for request in self.requestSamples:
-            if request == req[:self.requestLength[iterator]]:#заменить на findall или на работу по токенам
+        for key in self.requestSamples.keys():
+            if key == req[:self.requestLength[iterator]]:#заменить на findall или на работу по токенам
                 arg = str(req[self.requestLength[iterator]:].lstrip())
+                self.from_Alice = req
+                
+                if arg != None:
+                    arg = regex.sub('[,+-]', '', arg)
 
-
-                arg = regex.sub('[,+-]', '', arg)
-               
-                if arg == "":
-                    try:
-                        text = self.requestSamples[req[:self.requestLength[iterator]]]() 
-                    except TypeError:
-                        text = self.requestSamples[req[:self.requestLength[iterator]]](self) 
-
-                if arg != "":
-                    text = self.requestSamples[req[:self.requestLength[iterator]]](self,arg) 
+                if arg != None:
+                    text = self.requestSamples[key]['func'](self)
                  
                 break
             iterator = iterator + 1
 
-        return text, end, debug ,self.isfeedback
+        return text, end, debug, cmd
 
 
 def levenshtein_recognition(synonyms: list, str_from_Alice: str) -> str:
@@ -130,7 +153,6 @@ def levenshtein_recognition(synonyms: list, str_from_Alice: str) -> str:
 
     return ret
 
-    
 '''
 sample = datarequest()
 
