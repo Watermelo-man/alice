@@ -77,10 +77,10 @@ class datarequest():
             # 'хватит':shut,
         }
 
-    requestLength = []
+    requestLength = {}
     #requestSmaples['Алиса, напиши говно']()
-    for key in requestSamples:                  #это не решение, это пиздец. создаем список с длиной каждого ключа
-        requestLength.append(len(key))
+    for key in requestSamples.keys():                  #это не решение, это пиздец. создаем список с длиной каждого ключа
+        requestLength[key] = len(key)
 
     '''
     tokenContextField = ['карта', 'навык','работает'] 
@@ -120,14 +120,14 @@ class datarequest():
         
         iterator = 0
         for key in self.requestSamples.keys():
-            if key == req[:self.requestLength[iterator]]:#заменить на findall или на работу по токенам
-                arg = str(req[self.requestLength[iterator]:].lstrip())
-                self.from_Alice = req
+            if key == req[:self.requestLength[key]]:#заменить на findall или на работу по токенам
+                arg = str(req[self.requestLength[key]:].lstrip())
                 
                 if arg != None:
                     arg = regex.sub('[,+-]', '', arg)
 
                 if arg != None:
+                    self.from_Alice = str(req[self.requestLength[key]:])
                     text = self.requestSamples[key]['func'](self)
                  
                 break
