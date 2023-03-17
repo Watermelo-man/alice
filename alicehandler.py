@@ -138,15 +138,22 @@ def handler(event,context):
         and len(event['request']['command']) > 0:
 
         cmd_synonims = {
-            "Да" : ('да', 'хорошо', 'ага'),
-            "Нет" : ('нет', 'неа', 'не хочу')
+            "Да" : ('да', 'хорошо', 'ага', 'ладно'),
+            "Нет" : ('нет', 'неа', 'не-а', 'не хочу')
         }
 
         command = event['request']['command']
 
-        #for key in cmd_synonims.keys:
+        card_distance_min = 65000
+        for key in cmd_synonims.keys:
             # сравниваем Левенштейном command и cmd_synonims
             # command = самое пиздатое совпадение
+            for el in cmd_synonims[key]:
+                current_distance = Levenshtein.distance(el, command)
+                if card_distance_min > current_distance:
+                    card_distance_min = current_distance
+                    min_distance_key = key
+        command = min_distance_key
 
 
         # переходы
