@@ -159,6 +159,6 @@ def handler(event,context):
                 return make_response(event, None, debug, next_state, False)
 
         # обработка команд
-        text, end, debug, cmd = Datarequest.scanRequest(str(command), event["state"]["session"]["state"])
+        text, end, debug, cmd = Datarequest.scanRequest(str(command), event["state"]["session"]["state"], event)
 
     return make_response(event, text, debug, None, end, cmd)
