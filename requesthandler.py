@@ -56,7 +56,7 @@ class datarequest():
         baseState = baseinstance.connect()
         if baseState == 0:
             return "не подключились к базе"
-        return getStateOut(self.cur_state)
+        return baseinstance.getStateOut(self.cur_state)
 
     def feedback(self):
         return "ещё не доделали"
