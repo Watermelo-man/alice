@@ -6,7 +6,7 @@ bot = telebot.TeleBot('6058714565:AAHPhL2Bs_i9lyYaf0bvqcL1e-RkOhH85fU')
 
 Datarequest = datarequest()
 start_state = 107
-#commandhandler = ("help", "repeat", "about_app", "card_info", "act_info", "aobut_cards", "feedback", "end")
+#commandhandler = ("help", "repeat", "about_app", "card_info", "act_info", "aobut_cards", "feedback")
 
 # отвечаем пользователю
 def make_response(event, text, debug = {}, next_state = None, end = False, command_start = None):
@@ -92,7 +92,6 @@ def make_response(event, text, debug = {}, next_state = None, end = False, comma
     
     # добавляем кнопки возможных переходов
     buttons = []
-
     if baseinstance.connect():
         next_states, next_states_descr, query = baseinstance.getNextStates(current_state)  
         for row in next_states:
@@ -136,18 +135,8 @@ def handler(event,context):
     if 'request' in event\
         and 'original_utterance' in event['request'] \
         and len(event['request']['command']) > 0:
-
-        cmd_synonims = {
-            "Да" : ('да', 'хорошо', 'ага'),
-            "Нет" : ('нет', 'неа', 'не хочу')
-        }
-
+        
         command = event['request']['command']
-
-        #for key in cmd_synonims.keys:
-            # сравниваем Левенштейном command и cmd_synonims
-            # command = самое пиздатое совпадение
-
 
         # переходы
         if baseinstance.connect():
@@ -159,6 +148,6 @@ def handler(event,context):
                 return make_response(event, None, debug, next_state, False)
 
         # обработка команд
-        text, end, debug, cmd = Datarequest.scanRequest(str(command), event["state"]["session"]["state"], event)
+        text, end, debug, cmd = Datarequest.scanRequest(str(command_synonym), event["state"]["session"]["state"])
 
     return make_response(event, text, debug, None, end, cmd)

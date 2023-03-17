@@ -15,7 +15,7 @@ class datarequest():
         baseinstance = Base()
         baseState = baseinstance.connect()
         if baseState == 0:
-            return "не подключились к базе", None
+            return "не подключились к базе"
 
         self.DESCRIPTIONS=baseinstance.getDescriptionsFromBase()
     
@@ -31,10 +31,10 @@ class datarequest():
         baseinstance = Base()
         baseState = baseinstance.connect()
         if baseState == 0:
-            return "не подключились к базе", None
+            return "не подключились к базе"
         
         #print(baseinstance.getCardDescFrombase(card))
-        return baseinstance.getCardDescFrombase(card_name), "card_info"
+        return baseinstance.getCardDescFrombase(card_name)
         
 
     def getSkillFromBase(self):
@@ -43,38 +43,36 @@ class datarequest():
         baseinstance = Base()
         baseState = baseinstance.connect()
         if baseState == 0:
-            return "не подключились к базе", None
+            return "не подключились к базе"
         
         #print(baseinstance.getCardDescFrombase(card))
-        return baseinstance.getSkillDescFrombase(card_name), "act_info"
+        return baseinstance.getSkillDescFrombase(card_name)
 
     def help_f(self):
-        return "ещё не доделали", "help"
+        return "ещё не доделали"
 
     def repeat(self):
         baseinstance = Base()
         baseState = baseinstance.connect()
         if baseState == 0:
-            return "не подключились к базе", None
-        return baseinstance.getStateOut(self.cur_state), "repeat"
+            return "не подключились к базе"
+        return getStateOut(self.cur_state)
 
     def feedback(self):
-        return "ещё не доделали", "feedback"
+        return "ещё не доделали"
 
     def about(self):
-        # перейти в 108 состояние и вернуться
-        self.event
-        return "ещё не доделали", "about_app"
+        return "ещё не доделали"
 
     requestSamples = {
-            'как работает карта':       getCardDescription,
-            'как работает свойство':    getSkillFromBase  ,
-            'что делает эта карта':     getCardDescription,
-            'что делает':               getCardDescription,
-            'помощь':                   help_f            ,
-            'повтори':                  repeat            ,
-            'напиши разработчику':      feedback          ,
-            'что ты умеешь?':           about             
+            'как работает карта':       { "func" : getCardDescription,  "commandhandler" : "card_info"    },
+            'как работает свойство':    { "func" : getSkillFromBase  ,  "commandhandler" : "act_info"     },
+            'что делает эта карта':     { "func" : getCardDescription,  "commandhandler" : "card_info"    },
+            'что делает':               { "func" : getCardDescription,  "commandhandler" : "card_info"    },
+            'помощь':                   { "func" : help_f            ,  "commandhandler" : "help"         },
+            'повтори':                  { "func" : repeat            ,  "commandhandler" : "repeat"       },
+            'напиши разработчику':      { "func" : feedback          ,  "commandhandler" : "feedback"     },
+            'что ты умеешь?':           { "func" : about             ,  "commandhandler" : "about_app"    }
             # 'алиса хватит':shut,
             # 'хватит':shut,
         }
@@ -94,9 +92,8 @@ class datarequest():
         '''
 
     # возвращаем текст, флаг выхода, отладочную инфу
-    def scanRequest(self,req:str, current_state, event):
+    def scanRequest(self,req:str, current_state):
         self.cur_state = current_state
-        self.event = event
         #сканируем команду формы функция - аргумент вот так :
         #сравниваем инпут, отрезая от него предполагаемую функцию по длине строки
 
@@ -131,7 +128,7 @@ class datarequest():
 
                 if arg != None:
                     self.from_Alice = str(req[self.requestLength[key]:])
-                    text, cmd = self.requestSamples[key](self)
+                    text = self.requestSamples[key]['func'](self)
                  
                 break
             iterator = iterator + 1
