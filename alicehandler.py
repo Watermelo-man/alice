@@ -1,10 +1,3 @@
-
-import json
-
-f = open('event.json',encoding='utf-8')
-event = json.load(f)
-
-#there starts code for function
 from base import *
 from requesthandler import *
 import telebot
@@ -13,11 +6,14 @@ bot = telebot.TeleBot('6058714565:AAHPhL2Bs_i9lyYaf0bvqcL1e-RkOhH85fU')
 
 Datarequest = datarequest()
 start_state = 107
+#commandhandler = ("help", "repeat", "about_app", "card_info", "act_info", "aobut_cards", "feedback")
 
 # отвечаем пользователю
-def make_response(event, text, debug = {}, next_state = None, end = False):
+def make_response(event, text, debug = {}, next_state = None, end = False, command_start = None):
     global start_state
     baseinstance = Base()
+    next_states = []
+    next_states_descr = []
 
     # обработка первого состояния
     if event["session"]["new"]:
@@ -33,62 +29,75 @@ def make_response(event, text, debug = {}, next_state = None, end = False):
         
         if baseinstance.connect():
             text = baseinstance.getStateOut(current_state)
+        
+    # здесь current_state уже точно существует
 
     # отправляем лог
     screen = "screen" in event["meta"]["interfaces"]
-    msg =  "session id: " + event["session"]["session_id"] + "\n\n"
-    msg += "user_id: " + event["session"]["user"]["user_id"] + "\n\n"
-    msg += "screen: " + str(screen) + "\n\n"
+    #msg =  "session id: " + event["session"]["session_id"] + "\n\n"
+    #msg += "user_id: " + event["session"]["user"]["user_id"] + "\n\n"
+    msg = "screen: " + str(screen) + "\n\n"
     if 'command' in event['request']:
         msg += "request: " + str(event['request']['command']) + "\n\n"
     else:
         msg += "request: button pushed"
     msg += "response: "+ str(text) + "\n\n"
     msg += "current_state=" + str(current_state)
-    msg += "\n\ndebug: "+ str(debug)
+    #msg += "\n\ndebug: "+ str(debug)
 
     bot.send_message(-1001609876238 , msg ,message_thread_id = 453)
 
-    # --- сессионное хранилище
+# --- сессионное хранилище
     session_state = {
         'state' : current_state
     }
 
-    context_types = ("start", "cards_preparing", "store_preparing", "first_steps", "game step")
+    #context_types = ("start", "cards_preparing", "store_preparing", "first_steps", "game step")
 
     # цепляем предыдущие флаги
     if event["session"]["new"] == False:
         session_state['flags'] = event['state']['session']['flags']
     else:
+        # в первом состоянии - инициализируем
         session_state['flags'] = \
         {
-            'context' : context_types[0],
+            'context' : "start",
             'from_about_app' : False,
             'card_info_explained' : False
         }
 
-    # если мы уже не в сценарии сохранить куда возвращаться
+    # если мы уже не в сценарии
     if 'return_state' in session_state['flags']:
-        session_state['flags']['return_state'] = session_state['flags']['return_state'];
+        # и если это не последнее состояние обработчика
+        if not 'end_commandhandler' in session_state['flags'] \
+            or session_state['flags']['end_commandhandler'] == False:
+            # если выходим в "что ты умеешь?"
+            if (session_state['flags']['from_about_app']):
+                current_state = 120
+                if baseinstance.connect():
+                    text = baseinstance.getStateOut(current_state)
+                session_state['flags']['from_about_app'] = False
+                session_state['flags']['commandhandler'] = "about_app"
+            # если выходим в сценарий - убираем commandhandler
+            else:
+                del session_state['flags']['commandhandler']
 
-    if baseinstance.connect():
-        next_states, next_states_descr, query = baseinstance.getNextStates(current_state)
-    else:
-        next_states = []
-        next_states_descr = []
-
-    session_state['next_states'] = next_states
-    session_state['next_states_col_descr'] = next_states_descr
-    
+    # если заходим в обработчик "вопроса" - ставим commandhandler
+    if command_start != None:
+        session_state['flags']['commandhandler'] = command_start
+        # если заходим не из сценария - сохраняем куда возвращаться
+        if not 'return_state' in session_state['flags']:
+            session_state['flags']['return_state'] = current_state
+# ---
     
     # добавляем кнопки возможных переходов
     buttons = []
-    for row in next_states:
-        if 'delete' != row[next_states_descr.index('input_text')]:
-            buttons.append({ "title": row[next_states_descr.index('input_text')],
-            "payload": {row[next_states_descr.index('next_out_id')]}, "hide": True })
-    
-    # ---
+    if baseinstance.connect():
+        next_states, next_states_descr, query = baseinstance.getNextStates(current_state)  
+        for row in next_states:
+            if 'delete' != row[next_states_descr.index('input_text')]:
+                buttons.append({ "title": row[next_states_descr.index('input_text')],
+                "payload": {row[next_states_descr.index('next_out_id')]}, "hide": True })
 
     return{
             'version': event['version'],
@@ -115,7 +124,7 @@ def handler(event,context):
     global start_state 
     # обработка входа в сценарий
     if event['session']['new'] == True:
-        Datarequest.isShtut = "false"
+        #Datarequest.isShtut = "false"
         return make_response(event, None, {}, start_state, False)
 
     # обработка нажатия кнопок
@@ -139,9 +148,6 @@ def handler(event,context):
                 return make_response(event, None, debug, next_state, False)
 
         # обработка команд
-        text, end, debug = Datarequest.scanRequest(str(command))
+        text, end, debug, cmd = Datarequest.scanRequest(str(command), event["state"]["session"]["state"])
 
-    return make_response(event, text, debug, None, end)
-
-context = None
-handler(event,context)
+    return make_response(event, text, debug, None, end, cmd)
