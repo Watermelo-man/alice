@@ -119,7 +119,7 @@ def handler(event,context):
     # можно подумать про формирование отдельного потока для отправки логов
     #bot.send_message(-1001609876238 , "request = " + str(event) ,message_thread_id = 453)#debug
 
-    COMMANDS = Base().getCommandSynonymsFromBase()
+    COMMANDS = baseinstance.getCommandSynonymsFromBase()
 
     global start_state 
     # обработка входа в сценарий
