@@ -100,6 +100,24 @@ class Base():
         cur.close()
         self.base.close()
         return res
+    
+    def getCommandSynonymsFromBase(self) ->list:
+        cur = self.base.cursor()
+        query = "SELECT command_synonyms.synonym FROM command_synonyms"
+        cur.execute(query)
+        ret = cur.fetchall()
+        
+        if ret == None:
+            text = "Названия команд из базы не получены. Попробуйте позже"
+            return list()
+
+        res=list()
+        for el in ret:
+            res.append(el[0])
+
+        cur.close()
+        self.base.close()
+        return res
 
     def getStateOut(self, current_outId:str) -> str:
         cur = self.base.cursor()
@@ -113,10 +131,17 @@ class Base():
         return ret[0]
 
     def getNextState_byText(self, text:str, currentState:str):
+        
+
         cur = self.base.cursor()
-        query = 'SELECT inputs.next_state from inputs \
-        INNER JOIN States ON States.inputs_id = inputs.id \
-        WHERE inputs.text="' + str(text) + '" AND States.outputs_id=' + str(currentState)
+        query = 'SELECT t.input_next_state\
+                FROM (SELECT inputs.next_state AS input_next_state, inputs.id AS input_id\
+                    FROM inputs\
+                    INNER JOIN command_synonyms ON command_synonyms.command=inputs.text\
+                    WHERE command_synonyms.synonym='+str(text)+\
+                    ')\
+                AS t INNER JOIN States ON States.inputs_id=t.input_id\
+                WHERE States.outputs_id='+str(currentState)
         
         cur.execute(query)
         ret = cur.fetchone()

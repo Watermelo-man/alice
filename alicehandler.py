@@ -119,6 +119,8 @@ def handler(event,context):
     # можно подумать про формирование отдельного потока для отправки логов
     #bot.send_message(-1001609876238 , "request = " + str(event) ,message_thread_id = 453)#debug
 
+    COMMANDS = Base().getCommandSynonymsFromBase()
+
     global start_state 
     # обработка входа в сценарий
     if event['session']['new'] == True:
@@ -136,11 +138,13 @@ def handler(event,context):
         
         command = event['request']['command']
 
+        command_synonym = levenshtein_recognition(COMMANDS, command)
+
         # переходы
         if baseinstance.connect():
             'первое состояние должно быть уже обработано'
             cur_state = event["state"]["session"]["state"]
-            next_state = baseinstance.getNextState_byText(command, cur_state)
+            next_state = baseinstance.getNextState_byText(command_synonym, cur_state)
             if next_state != None:
                 debug = {"next state" :next_state}
                 return make_response(event, None, debug, next_state, False)

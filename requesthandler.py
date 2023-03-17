@@ -31,7 +31,7 @@ class datarequest():
     def getCardDescription(self, card_from_Alice:str):
 
         # Среди всех описаний из базы данных находим наиболее похожее с запрашиваемой Алисой картой
-        card_name = card_recognition(self.DESCRIPTIONS, card_from_Alice)
+        card_name = levenshtein_recognition(self.DESCRIPTIONS, card_from_Alice)
 
         baseinstance = Base()
         baseState = baseinstance.connect()
@@ -47,7 +47,7 @@ class datarequest():
         return feedb
 
     def getSkillFromBase(self,skill_from_Alice:str):
-        card_name = card_recognition(self.DESCRIPTIONS, skill_from_Alice)
+        card_name = levenshtein_recognition(self.DESCRIPTIONS, skill_from_Alice)
 
         baseinstance = Base()
         baseState = baseinstance.connect()
@@ -114,19 +114,19 @@ class datarequest():
         return text, end, debug ,self.isfeedback
 
 
-def card_recognition(card_names: list, card_from_Alice: str) -> str:
+def levenshtein_recognition(synonyms: list, str_from_Alice: str) -> str:
     card_distance_min = 65000
     #min_distance_idx = len(card_names)
 
-    for i in range(len(card_names)):
-        current_distance = Levenshtein.distance(card_names[i], card_from_Alice)
+    for i in range(len(synonyms)):
+        current_distance = Levenshtein.distance(synonyms[i], str_from_Alice)
         if card_distance_min > current_distance:
             card_distance_min = current_distance
             min_distance_idx = i
     
-    treshhold_condition = card_distance_min < len(card_names[min_distance_idx])/2
+    treshhold_condition = card_distance_min < len(synonyms[min_distance_idx])/2
 
-    ret = card_names[min_distance_idx] if treshhold_condition else ""
+    ret = synonyms[min_distance_idx] if treshhold_condition else ""
 
     return ret
 
