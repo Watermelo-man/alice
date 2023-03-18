@@ -44,7 +44,8 @@ class datarequest():
         baseinstance = Base()
         if baseinstance.connect():
             self.session_store['flags']['commandhandler'] = "card_info"
-            self.session_store['flags']['return_state'] = self.session_store['state']
+            if self.session_store['flags']['return_state'] == None:
+                self.session_store['flags']['return_state'] = self.session_store['state']
             text = baseinstance.getCardDescFrombase(card_name)
             self.session_store['flags']['custom_repeat'] = text
             self.session_store['state'] = -1
@@ -73,10 +74,10 @@ class datarequest():
         if baseinstance.connect():
             self.session_store['flags']['commandhandler'] = "help"
             self.session_store['flags']['return_state'] = self.session_store['state']
-            self.session_store['state'] = 118
+            
             text = baseinstance.getStateOut(118)
-            self.session_store['buttons'] = [ { "title": "Да", "payload": self.session_store['state'], "hide": True } ]
-
+            self.session_store['buttons'] = [ { "title": "Назад", "payload": self.session_store['state'], "hide": True } ]
+            self.session_store['state'] = 118
         return text
         
 

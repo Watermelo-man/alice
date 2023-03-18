@@ -115,15 +115,22 @@ class Base():
             self.base.close()
             return ret[0]
         
+        return_text = "чтобы вернуться к игре скажите назад"
+
         if int(current_outId) == 0:
-            return "чтобы вернуться к игре скажите назад"
+            return return_text
         
         else:
             if session_store['flags']['commandhandler'] == "card_info":
                 if int(current_outId) == -2:
                     if not self.connect():
                         raise Exception("что-то пошло не так, попробуйте ещё раз.")
-                    return self.getCardDetailedDescr(session_store['flags']['last_card_name'])
+
+                    text = self.getCardDetailedDescr(session_store['flags']['last_card_name'])
+                    text = text + return_text
+                    if len(text) > 1024:
+                        text = text[:1024]
+                    return text
 
     def getCardDetailedDescr(self, card):
         cur = self.base.cursor()
