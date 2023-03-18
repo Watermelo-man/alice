@@ -75,6 +75,7 @@ class datarequest():
             self.session_store['flags']['return_state'] = self.session_store['state']
             self.session_store['state'] = 118
             text = baseinstance.getStateOut(118)
+            self.session_store['buttons'] = [ { "title": "Да", "payload": self.session_store['state'], "hide": True } ]
 
         return text
         

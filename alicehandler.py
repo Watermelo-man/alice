@@ -75,8 +75,7 @@ def session_start_handler(event):
 def set_next_state(session_store, next_state):
     buttons = []
 
-    if session_store['state'] == 0:
-        session_store['flags']['custom_repeat'] = None
+    session_store['flags']['custom_repeat'] = None
 
     baseinstance = Base()
     if next_state <= 0:
@@ -86,9 +85,17 @@ def set_next_state(session_store, next_state):
             return e
         session_store['flags']['custom_repeat'] = text
         buttons.append({ "title": "Назад", "payload": session_store['flags']['return_state'], "hide": True })
-        session_store['state'] = session_store['flags']['return_state']
+        
+        # if session_store['state'] == 0:
+        #     session_store['flags']['return_state']
+
+        session_store['state'] = next_state
         session_store['buttons'] = buttons
         return text
+
+    if next_state == 118:
+        buttons.append({ "title": "Назад", "payload": session_store['flags']['return_state'], "hide": True })
+        session_store['buttons'] = buttons
 
     # if session_store['flags']['commandhandler'] != None:
     #     # программное добавление кнопок
@@ -111,7 +118,7 @@ def set_next_state(session_store, next_state):
     return text
 
 
-def button_clicked_handler(event):
+def button_clicked_handler(event, session_store):
     if event['request']['type'] != "ButtonPressed":
         return False, {}
 
@@ -119,8 +126,6 @@ def button_clicked_handler(event):
         next_state = event['request']['payload']
     else:
         next_state = int(str(event['request']['payload'])[1:-1])
-
-    session_store = event['state']['session']
 
     text = set_next_state(session_store, next_state)
     
@@ -134,14 +139,14 @@ def handler(event,context):
     ok, response = session_start_handler(event)
     if ok: return response
 
+    session_store = event['state']['session']
     # обработка нажатия кнопок
-    ok, response = button_clicked_handler(event)
+    ok, response = button_clicked_handler(event, session_store)
     if ok: return response
 
     #обработка произвольного ввода        
     request = event['request']['command']
 
-    session_store = event['state']['session']
     text, end, debug, session_store = Datarequest.scanRequest(request, session_store, bot)
     return make_response(event, text, debug, session_store, end)
 

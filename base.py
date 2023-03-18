@@ -104,7 +104,7 @@ class Base():
 
     def getStateOut(self, current_outId:str, session_store = None) -> str:
 
-        if self.base != None:
+        if session_store == None:
             cur = self.base.cursor()
             query = "SELECT text FROM outputs WHERE id=" + str(current_outId)
             
@@ -115,7 +115,7 @@ class Base():
             self.base.close()
             return ret[0]
         
-        elif session_store['state'] == 0:
+        if int(current_outId) == 0:
             return "чтобы вернуться к игре скажите назад"
         
         else:
@@ -123,7 +123,6 @@ class Base():
                 if int(current_outId) == -2:
                     if not self.connect():
                         raise Exception("что-то пошло не так, попробуйте ещё раз.")
-                    
                     return self.getCardDetailedDescr(session_store['flags']['last_card_name'])
 
     def getCardDetailedDescr(self, card):
