@@ -28,12 +28,30 @@ class datarequest():
         
         text = "что-то пошло не так. попробуйте ещё раз."
 
+        buttons = [
+            {
+                "title": "Да",
+                "payload": -2,
+                "hide": True
+            },
+            {
+                "title": "Нет",
+                "payload": 0, # возврат к контексту
+                "hide": True
+            }
+        ]
+
         baseinstance = Base()
         if baseinstance.connect():
+            self.session_store['flags']['commandhandler'] = "card_info"
+            self.session_store['flags']['return_state'] = self.session_store['state']
             text = baseinstance.getCardDescFrombase(card_name)
+            self.session_store['flags']['custom_repeat'] = text
+            self.session_store['state'] = -1
+            self.session_store['buttons'] = buttons
+            self.session_store['flags']['last_card_name'] = card_name
         
-        #print(baseinstance.getCardDescFrombase(card))
-        return text#, "card_info"
+        return text
         
 
     def getSkillFromBase(self):
@@ -63,10 +81,14 @@ class datarequest():
 
     def repeat(self):
         text = "что-то пошло не так. попробуйте ещё раз."
-        
         baseinstance = Base()
-        if baseinstance.connect():
-            text = baseinstance.getStateOut(self.session_store['state'])
+
+        if self.session_store['flags']['custom_repeat'] == None:
+            if baseinstance.connect():
+                text = baseinstance.getStateOut(self.session_store['state'])
+        else:
+            text = self.session_store['flags']['custom_repeat']
+        
         return text#, "repeat"
 
     def feedback(self):
@@ -117,7 +139,8 @@ class datarequest():
         '''
 
     # возвращаем текст, флаг выхода, отладочную инфу
-    def scanRequest(self,req:str, session_store):
+    def scanRequest(self,req:str, session_store, bot):
+        self.bot = bot
         self.session_store = session_store
         text = "Извините, запрос непонятен"
         end = False
@@ -140,24 +163,27 @@ class datarequest():
                 debug['is subflow start'] = True
                 return text, end, debug, self.session_store
 
+        if self.session_store['buttons']:
+            min_distance_item = self.session_store['buttons'][0]
+            min_distance = Levenshtein.distance(min_distance_item['title'].lower(), incoming_command)
 
-        min_distance_item = self.session_store['buttons'][0]
-        min_distance = Levenshtein.distance(min_distance_item['title'].lower(), incoming_command)
-
-        for btn in self.session_store['buttons']:
-            current_distance = Levenshtein.distance(btn['title'].lower(), incoming_command)
-            if min_distance > current_distance:
-                min_distance = current_distance
-                min_distance_item = btn
+            for btn in self.session_store['buttons']:
+                current_distance = Levenshtein.distance(btn['title'].lower(), incoming_command)
+                if min_distance > current_distance:
+                    min_distance = current_distance
+                    min_distance_item = btn
             
-        treshhold_condition = min_distance < len(incoming_command) / 2
+            treshhold_condition = min_distance < len(incoming_command) / 2
 
-        if not treshhold_condition:
-            return text, end, debug, self.session_store
+            if not treshhold_condition:
+                return text, end, debug, self.session_store
 
-        next_state = int(str(min_distance_item["payload"])[1:-1])
+            if type(min_distance_item["payload"]) == int:
+                next_state = min_distance_item["payload"]
+            else:
+                next_state = int(str(min_distance_item["payload"])[1:-1])
 
-        text = alicehandler.set_next_state(self.session_store, next_state)
+            text = alicehandler.set_next_state(self.session_store, next_state)
         
         # # проверка переходов по не сценарным кнопкам
         # if 'commandhandler' in event['state']['session']['flags']:

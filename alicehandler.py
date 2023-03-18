@@ -63,6 +63,8 @@ def session_start_handler(event):
             'flags' : {
                 'commandhandler' : None,
                 'return_state' : None,
+                'custom_repeat' : None,
+                'last_card_name' : None
             },
             'buttons' : buttons
         }
@@ -73,21 +75,36 @@ def session_start_handler(event):
 def set_next_state(session_store, next_state):
     buttons = []
 
-    if session_store['flags']['commandhandler'] != None:
-        # программное добавление кнопок
-        buttons.append({ "title": "Вернуться", "payload": session_state['flags']['return_state'], "hide": True })
-    else:
+    if session_store['state'] == 0:
+        session_store['flags']['custom_repeat'] = None
+
+    baseinstance = Base()
+    if next_state <= 0:
+        try:
+            text = baseinstance.getStateOut(next_state, session_store)
+        except Exception as e:
+            return e
+        session_store['flags']['custom_repeat'] = text
+        buttons.append({ "title": "Назад", "payload": session_store['flags']['return_state'], "hide": True })
+        session_store['state'] = session_store['flags']['return_state']
+        session_store['buttons'] = buttons
+        return text
+
+    # if session_store['flags']['commandhandler'] != None:
+    #     # программное добавление кнопок
+    #     buttons.append({ "title": "Вернуться", "payload": session_store['flags']['return_state'], "hide": True })
+    # else:
         # добавление кнопок из базы
-        baseinstance = Base()
-        if baseinstance.connect():
-            next_states, next_states_descr, query = baseinstance.getNextStates(next_state, False)
-            for row in next_states:
-                if 'delete' != row[next_states_descr.index('input_text')]:
-                    buttons.append({ "title": row[next_states_descr.index('input_text')],
-                    "payload": {row[next_states_descr.index('next_out_id')]}, "hide": True })
-            text = baseinstance.getStateOut(str(next_state))
-        else:
-            return "что-то пошло не так. попробуйте ещё раз."
+    baseinstance = Base()
+    if baseinstance.connect():
+        next_states, next_states_descr, query = baseinstance.getNextStates(next_state, False)
+        for row in next_states:
+            if 'delete' != row[next_states_descr.index('input_text')]:
+                buttons.append({ "title": row[next_states_descr.index('input_text')],
+                "payload": {row[next_states_descr.index('next_out_id')]}, "hide": True })
+        text = baseinstance.getStateOut(str(next_state))
+    else:
+        return "что-то пошло не так. попробуйте ещё раз."
     
     session_store['state'] = next_state
     session_store['buttons'] = buttons
@@ -98,7 +115,10 @@ def button_clicked_handler(event):
     if event['request']['type'] != "ButtonPressed":
         return False, {}
 
-    next_state = int(str(event['request']['payload'])[1:-1])
+    if type(event['request']['payload']) ==int:
+        next_state = event['request']['payload']
+    else:
+        next_state = int(str(event['request']['payload'])[1:-1])
 
     session_store = event['state']['session']
 
@@ -122,7 +142,7 @@ def handler(event,context):
     request = event['request']['command']
 
     session_store = event['state']['session']
-    text, end, debug, session_store = Datarequest.scanRequest(request, session_store)
+    text, end, debug, session_store = Datarequest.scanRequest(request, session_store, bot)
     return make_response(event, text, debug, session_store, end)
 
     # # обработка переходов

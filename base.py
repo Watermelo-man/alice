@@ -102,16 +102,54 @@ class Base():
         self.base.close()
         return res
 
-    def getStateOut(self, current_outId:str) -> str:
+    def getStateOut(self, current_outId:str, session_store = None) -> str:
+
+        if self.base != None:
+            cur = self.base.cursor()
+            query = "SELECT text FROM outputs WHERE id=" + str(current_outId)
+            
+            cur.execute(query)
+            ret = cur.fetchone()
+
+            cur.close()
+            self.base.close()
+            return ret[0]
+        
+        elif session_store['state'] == 0:
+            return "чтобы вернуться к игре скажите назад"
+        
+        else:
+            if session_store['flags']['commandhandler'] == "card_info":
+                if int(current_outId) == -2:
+                    if not self.connect():
+                        raise Exception("что-то пошло не так, попробуйте ещё раз.")
+                    
+                    return self.getCardDetailedDescr(session_store['flags']['last_card_name'])
+
+    def getCardDetailedDescr(self, card):
         cur = self.base.cursor()
-        query = "SELECT text FROM outputs WHERE id=" + str(current_outId)
+        query = "SELECT Descriptions.text FROM Descriptions INNER JOIN( \
+        SELECT DISTINCT Features.Feature_type FROM Features INNER JOIN( \
+        SELECT card_features.feature_id FROM card_features WHERE \
+        card_features.card_name='" + card + "') AS t ON Features.id = t.feature_id \
+        ) AS ftr ON ftr.Feature_type=Descriptions.name"
         
         cur.execute(query)
-        ret = cur.fetchone()
+        ret = cur.fetchall()
 
         cur.close()
         self.base.close()
-        return ret[0]
+        if ret == None:
+            return None
+        else:
+            retstring = ""
+            for row in ret:
+                retstring = retstring + str(row[0])
+
+            if len(retstring) > 1024:
+                retstring = retstring[:1024]
+                
+            return retstring
 
     def getNextState_byText(self, text:str, currentState:str):
         cur = self.base.cursor()
