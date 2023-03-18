@@ -15,7 +15,7 @@ class datarequest():
         baseinstance = Base()
         baseState = baseinstance.connect()
         if baseState == 0:
-            return "не подключились к базе"
+            return "не подключились к базе", None
 
         self.DESCRIPTIONS=baseinstance.getDescriptionsFromBase()
     
@@ -31,10 +31,10 @@ class datarequest():
         baseinstance = Base()
         baseState = baseinstance.connect()
         if baseState == 0:
-            return "не подключились к базе"
+            return "не подключились к базе", None
         
         #print(baseinstance.getCardDescFrombase(card))
-        return baseinstance.getCardDescFrombase(card_name)
+        return baseinstance.getCardDescFrombase(card_name), "card_info"
         
 
     def getSkillFromBase(self):
@@ -43,36 +43,47 @@ class datarequest():
         baseinstance = Base()
         baseState = baseinstance.connect()
         if baseState == 0:
-            return "не подключились к базе"
+            return "не подключились к базе", None
         
         #print(baseinstance.getCardDescFrombase(card))
-        return baseinstance.getSkillDescFrombase(card_name)
+        return baseinstance.getSkillDescFrombase(card_name), "act_info"
 
     def help_f(self):
-        return "ещё не доделали"
+        # перейти в 118 состояние и вернуться
+        baseinstance = Base()
+        baseState = baseinstance.connect()
+        if baseState == 0:
+            return "не подключились к базе", None
+
+        self.event['state']['session']['flags']['return_state'] = self.event['state']['session']['state']
+        self.event['state']['session']['flags']['end_commandhandler'] = True
+        self.event['state']['session']['state'] = 118
+
+        return baseinstance.getStateOut(118), "help"
+        
 
     def repeat(self):
         baseinstance = Base()
         baseState = baseinstance.connect()
         if baseState == 0:
-            return "не подключились к базе"
-        return getStateOut(self.cur_state)
+            return "не подключились к базе", None
+        return baseinstance.getStateOut(self.cur_state), "repeat"
 
     def feedback(self):
-        return "ещё не доделали"
+        return "ещё не доделали", "feedback"
 
     def about(self):
-        return "ещё не доделали"
+        return "ещё не доделали", "about_app"
 
     requestSamples = {
-            'как работает карта':       { "func" : getCardDescription,  "commandhandler" : "card_info"    },
-            'как работает свойство':    { "func" : getSkillFromBase  ,  "commandhandler" : "act_info"     },
-            'что делает эта карта':     { "func" : getCardDescription,  "commandhandler" : "card_info"    },
-            'что делает':               { "func" : getCardDescription,  "commandhandler" : "card_info"    },
-            'помощь':                   { "func" : help_f            ,  "commandhandler" : "help"         },
-            'повтори':                  { "func" : repeat            ,  "commandhandler" : "repeat"       },
-            'напиши разработчику':      { "func" : feedback          ,  "commandhandler" : "feedback"     },
-            'что ты умеешь?':           { "func" : about             ,  "commandhandler" : "about_app"    }
+            'как работает карта':       getCardDescription,
+            'как работает свойство':    getSkillFromBase  ,
+            'что делает эта карта':     getCardDescription,
+            'что делает':               getCardDescription,
+            'помощь':                   help_f            ,
+            'повтори':                  repeat            ,
+            'напиши разработчику':      feedback          ,
+            'что ты умеешь?':           about             
             # 'алиса хватит':shut,
             # 'хватит':shut,
         }
@@ -92,8 +103,10 @@ class datarequest():
         '''
 
     # возвращаем текст, флаг выхода, отладочную инфу
-    def scanRequest(self,req:str, current_state):
+    def scanRequest(self,req:str, current_state, event):
+        self.next_state = None
         self.cur_state = current_state
+        self.event = event
         #сканируем команду формы функция - аргумент вот так :
         #сравниваем инпут, отрезая от него предполагаемую функцию по длине строки
 
@@ -128,12 +141,12 @@ class datarequest():
 
                 if arg != None:
                     self.from_Alice = str(req[self.requestLength[key]:])
-                    text = self.requestSamples[key]['func'](self)
+                    text, cmd = self.requestSamples[key](self)
                  
                 break
             iterator = iterator + 1
 
-        return text, end, debug, cmd
+        return text, end, debug, cmd, self.next_state
 
 
 def card_recognition(card_names: list, card_from_Alice: str) -> str:
