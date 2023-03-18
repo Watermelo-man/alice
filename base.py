@@ -12,7 +12,8 @@ class Base():
                     password="uJ9_ZIOavQ",
                     host="185.171.192.30",
                     port=3306,
-                    database=base_source
+                    database=base_source,
+                    read_timeout = 1
                 )
                 self.base = conn
                 return 1 #"подключение успешно!"
@@ -55,7 +56,7 @@ class Base():
 
 
 
-    def getNextStates(self, current_outId:str):
+    def getNextStates(self, current_outId:str, close=True):
         cur = self.base.cursor()
         query = "WITH t AS(\
             SELECT\
@@ -78,8 +79,9 @@ class Base():
         cur.execute(query)
         ret = cur.fetchall()
 
-        cur.close()
-        self.base.close()
+        if close:
+            cur.close()
+            self.base.close()
         return ret, ('input_id', 'input_text', 'next_out_id'), query
         
     def getDescriptionsFromBase(self) ->list:

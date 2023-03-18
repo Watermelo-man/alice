@@ -3,35 +3,10 @@ from requesthandler import *
 import telebot
 
 bot = telebot.TeleBot('6058714565:AAHPhL2Bs_i9lyYaf0bvqcL1e-RkOhH85fU')
-
 Datarequest = datarequest()
-start_state = 107
-#commandhandler = ("help", "repeat", "about_app", "card_info", "act_info", "aobut_cards", "feedback", "end")
 
-# отвечаем пользователю
-def make_response(event, text, debug = {}, next_state = None, end = False, command_start = None):
-    global start_state
-    baseinstance = Base()
-    next_states = []
-    next_states_descr = []
 
-    # обработка первого состояния
-    if event["session"]["new"]:
-        next_state = start_state
-        text = None
-        if baseinstance.connect():
-            text = baseinstance.getStateOut(start_state)
-    else:
-        current_state = event["state"]["session"]["state"]
-
-    if next_state != None:
-        current_state = next_state
-        
-        if baseinstance.connect():
-            text = baseinstance.getStateOut(current_state)
-        
-    # здесь current_state уже точно существует
-
+def send_log(event, text):
     # отправляем лог
     screen = "screen" in event["meta"]["interfaces"]
     #msg =  "session id: " + event["session"]["session_id"] + "\n\n"
@@ -42,151 +17,127 @@ def make_response(event, text, debug = {}, next_state = None, end = False, comma
     else:
         msg += "request: button pushed"
     msg += "response: "+ str(text) + "\n\n"
-    msg += "current_state=" + str(current_state)
+    msg += "current_state=" + str(event['state']['session']['state'])
     #msg += "\n\ndebug: "+ str(debug)
 
     bot.send_message(-1001609876238 , msg ,message_thread_id = 453)
 
-# --- сессионное хранилище
-    session_state = {
-        'state' : current_state
-    }
-
-    #context_types = ("start", "cards_preparing", "store_preparing", "first_steps", "game step")
-
-    # цепляем предыдущие флаги
-    if event["session"]["new"] == False:
-        session_state['flags'] = event['state']['session']['flags']
-    else:
-        # в первом состоянии - инициализируем
-        # что закомментировано выставляется в requesthandler
-        session_state['flags'] = \
-        {
-            'context' : "start",
-            'from_about_app' : False,
-            'card_info_explained' : False
-            # return_state
-            # end_commandhandler
-        }
-
-    is_cmd_end = not( not 'end_commandhandler' in session_state['flags'] \
-            or session_state['flags']['end_commandhandler'] == False)
-
-    commandhandler_del = False
-    # если мы уже не в сценарии
-    if 'return_state' in session_state['flags']:
-        # и если это последнее состояние обработчика
-        if is_cmd_end:
-            # если выходим в "что ты умеешь?"
-            if (session_state['flags']['from_about_app']):
-                current_state = 120
-                if baseinstance.connect():
-                    text = baseinstance.getStateOut(current_state)
-                session_state['flags']['from_about_app'] = False
-                session_state['flags']['commandhandler'] = "about_app"
-            # если выходим в сценарий - убираем commandhandler
-            elif 'commandhandler' in session_state['flags']:
-                del session_state['flags']['commandhandler']
-                commandhandler_del = True
-
-
-    # если заходим в обработчик "вопроса" - ставим commandhandler
-    if command_start != None or is_cmd_end:
-        if not commandhandler_del:
-            session_state['flags']['commandhandler'] = command_start
-        # если заходим не из сценария - сохраняем куда возвращаться
-        if not 'return_state' in session_state['flags']:
-            session_state['flags']['return_state'] = current_state
-# ---
-    
-    # добавляем кнопки возможных переходов
-    buttons = []
-
-    bot.send_message(-1001609876238 , "is_cmd_end = "+str(is_cmd_end) ,message_thread_id = 453)
-    if is_cmd_end:
-        if event["session"]["new"] == False:
-            buttons.append({ "title": "Вернуться", "payload": {session_state['flags']['return_state']}, "hide": True })
-            del session_state['flags']['return_state']
-            del session_state['flags']['end_commandhandler']
-    else:
-        if baseinstance.connect():
-            next_states, next_states_descr, query = baseinstance.getNextStates(current_state)  
-        for row in next_states:
-            if 'delete' != row[next_states_descr.index('input_text')]:
-                buttons.append({ "title": row[next_states_descr.index('input_text')],
-                "payload": {row[next_states_descr.index('next_out_id')]}, "hide": True })
-                
+def make_response(event, text, debug, session_store, end = False):
+    send_log(event, text)
     return{
             'version': event['version'],
             'session': event['session'],
-            "session_state": session_state,
+            'session_state': session_store,
             'response': {
                 'text': text,
-                "buttons": buttons,
+                'buttons': session_store['buttons'],
                 'end_session': end
             },
             'debug' : debug
         }
 
+# обработка входа в сценарий
+def session_start_handler(event):
+    start_state = 107
+
+    if event['session']['new']:
+        buttons = []
+        end = False
+        event['state']['session']['state'] = 107
+
+        # добавление кнопок из базы
+        baseinstance = Base()
+        if baseinstance.connect():
+            next_states, next_states_descr, query = baseinstance.getNextStates(start_state, False)
+            for row in next_states:
+                if 'delete' != row[next_states_descr.index('input_text')]:
+                    buttons.append({ "title": row[next_states_descr.index('input_text')],
+                    "payload": {row[next_states_descr.index('next_out_id')]}, "hide": True })
+            text = baseinstance.getStateOut(str(start_state))
+        else:
+            text = "что-то пошло не так. попробуйте зайти позже"
+            end = True
+        
+        session_store = {
+            'state' : start_state,
+            'flags' : {
+                'commandhandler' : None,
+                'return_state' : None,
+            },
+            'buttons' : buttons
+        }
+        return True, make_response(event, text, [], session_store, end)
+    
+    return False, {}
+
+def set_next_state(session_store, next_state):
+    buttons = []
+
+    if session_store['flags']['commandhandler'] != None:
+        # программное добавление кнопок
+        buttons.append({ "title": "Вернуться", "payload": session_state['flags']['return_state'], "hide": True })
+    else:
+        # добавление кнопок из базы
+        baseinstance = Base()
+        if baseinstance.connect():
+            next_states, next_states_descr, query = baseinstance.getNextStates(next_state, False)
+            for row in next_states:
+                if 'delete' != row[next_states_descr.index('input_text')]:
+                    buttons.append({ "title": row[next_states_descr.index('input_text')],
+                    "payload": {row[next_states_descr.index('next_out_id')]}, "hide": True })
+            text = baseinstance.getStateOut(str(next_state))
+        else:
+            return "что-то пошло не так. попробуйте ещё раз."
+    
+    session_store['state'] = next_state
+    session_store['buttons'] = buttons
+    return text
+
+
+def button_clicked_handler(event):
+    if event['request']['type'] != "ButtonPressed":
+        return False, {}
+
+    next_state = int(str(event['request']['payload'])[1:-1])
+
+    session_store = event['state']['session']
+
+    text = set_next_state(session_store, next_state)
+    
+    return True, make_response(event, text, [], session_store, False)
+
+
+
 # start point
 def handler(event,context):
-    text = "не обработано"
-    debug = {}
-    baseinstance = Base()
-
-    # отправляем лог реквеста (возможно это вносит вклад в падения по таймауту)
-    # можно подумать про формирование отдельного потока для отправки логов
-    #bot.send_message(-1001609876238 , "request = " + str(event) ,message_thread_id = 453)#debug
-
-    global start_state 
     # обработка входа в сценарий
-    if event['session']['new'] == True:
-        #Datarequest.isShtut = "false"
-        return make_response(event, None, {}, start_state, False)
+    ok, response = session_start_handler(event)
+    if ok: return response
 
     # обработка нажатия кнопок
-    if event['request']['type'] == "ButtonPressed":
-        return make_response(event, None, {}, int(str(event['request']["payload"])[1:-1]), False)
+    ok, response = button_clicked_handler(event)
+    if ok: return response
 
-    # обработка произвользого ввода
-    if 'request' in event\
-        and 'original_utterance' in event['request'] \
-        and len(event['request']['command']) > 0:
+    #обработка произвольного ввода        
+    request = event['request']['command']
 
-        cmd_synonims = {
-            "Да" : ('да', 'хорошо', 'ага', 'ладно'),
-            "Нет" : ('нет', 'неа', 'не-а', 'не хочу')
-        }
+    session_store = event['state']['session']
+    text, end, debug, session_store = Datarequest.scanRequest(request, session_store)
+    return make_response(event, text, debug, session_store, end)
 
-        command = event['request']['command']
+    # # обработка переходов
+    # baseinstance = Base()
+    # foundNextState = None
+    # if baseinstance.connect() != 0:
+    #     if (event["state"] and event["state"]["session"] and event["state"]["session"]["state"]):
+    #         cur_state = event["state"]["session"]["state"]
+    #     else:
+    #         cur_state = start_state
+    #     foundNextState = baseinstance.getNextState_byText(request[0], cur_state)
+    #     if foundNextState != None:
+    #         return make_response(event, None, [None,None,str(foundNextState)], foundNextState, False)
 
-        card_distance_min = 65000
-        for key in cmd_synonims.keys:
-            # сравниваем Левенштейном command и cmd_synonims
-            # command = самое пиздатое совпадение
-            for el in cmd_synonims[key]:
-                current_distance = Levenshtein.distance(el, command)
-                if card_distance_min > current_distance:
-                    card_distance_min = current_distance
-                    min_distance_key = key
-        command = min_distance_key
+    # # обработка команд
+    # list_arg = Datarequest.scanRequest(request)
 
-        # выходы из команд
-        if 'end_commandhandler' in event['state']['session']['flags'] \
-            and event['state']['session']['flags']['end_commandhandler'] == True:
-            #next_state = event['state']['session']['flags']['return_state']
-            return make_response(event, None, {}, next_state)
-
-        # переходы
-        if baseinstance.connect():
-            'первое состояние должно быть уже обработано'
-            cur_state = event["state"]["session"]["state"]
-            next_state = baseinstance.getNextState_byText(command, cur_state)
-            if next_state != None:
-                debug = {"next state" :next_state}
-                return make_response(event, None, debug, next_state)
-
-        # обработка команд
-        text, end, debug, cmd, next_state = Datarequest.scanRequest(str(command), event["state"]["session"]["state"], event)
-
-    return make_response(event, text, debug, next_state, end, cmd)
+    # return make_response(event, list_arg[0], list_arg, None, list_arg[1])
