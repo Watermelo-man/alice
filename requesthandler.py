@@ -1,6 +1,7 @@
 
 
 
+import random
 from base import *
 
 import string
@@ -100,7 +101,10 @@ class datarequest():
         # if (self.isShtut == "true"):
         #     return "До свидания!", "true", {} # text, endflag, debug
             
-        text = "Извините, запрос непонятен"
+        text = random.choice(["Извините, запрос непонятен",
+                              "Вы не могли бы повторить",
+                              "Извините, что-то со слухом, повторите пожалуста",
+                              "Что-что?"])
         end = "false"
         cmd = None
         debug = {}
