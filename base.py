@@ -127,7 +127,9 @@ class Base():
                         raise Exception("что-то пошло не так, попробуйте ещё раз.")
 
                     text = self.getCardDetailedDescr(session_store['flags']['last_card_name'])
-                    text = text + return_text
+                    # if session_store['flags']['from_about'] == False:
+                    #     text = text + return_text
+                    
                     if len(text) > 1024:
                         text = text[:1024]
                     return text

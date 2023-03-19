@@ -78,11 +78,12 @@ def set_next_state(session_store, next_state):
     prev_state = session_store['state']
 
     session_store['flags']['custom_repeat'] = None
+    if prev_state == 179:
+        session_store['flags']['from_about'] = False
 
     baseinstance = Base()
     if next_state <= 0:
-        if session_store['flags']['from_about'] and \
-        (next_state == 0 or next_state == -2):
+        if session_store['flags']['from_about'] and next_state == 0 and prev_state == -1:
             session_store['flags']['from_about'] = False
             session_store['flags']['commandhandler'] = 'about_app'
             return set_next_state(session_store, 179)
@@ -92,13 +93,32 @@ def set_next_state(session_store, next_state):
         except Exception as e:
             return e
         session_store['flags']['custom_repeat'] = text
-        buttons.append({ "title": "Назад", "payload": session_store['flags']['return_state'], "hide": True })
+
+        ret_st = session_store['flags']['return_state']
+        if session_store['flags']['from_about']:
+            ret_st = 179
+        buttons.append({ "title": "Назад", "payload": ret_st, "hide": True })
         
         # if session_store['state'] == 0:
         #     session_store['flags']['return_state']
         session_store['state'] = next_state
         session_store['buttons'] = buttons
         return text
+
+    session_store['flags']['from_about'] = False
+    session_store['flags']['commandhandler'] = None
+
+    # if session_store['flags']['from_about'] and  prev_state == 0:
+    #     session_store['flags']['commandhandler'] = 'about_app'
+    #     return set_next_state(session_store, 179)
+
+    if next_state == 1:
+        if session_store['flags']['game_context'] == 'hello':
+            next_state = 178
+        else:
+            next_state = 177
+            buttons.append({ "title": "Да", "payload": session_store['flags']['return_state'], "hide": True })
+
 
     # помощь
     if next_state == 118:
@@ -115,19 +135,21 @@ def set_next_state(session_store, next_state):
         session_store['flags']['game_context'] = 'game'
     
     # первое состояние "что ты умеещь"
-    if prev_state == 119:
+    if next_state == 119 and prev_state == 107:
         session_store['flags']['commandhandler'] = 'about_app'
+        session_store['flags']['return_state'] = 99
 
-    if (prev_state == 120 and next_state != 118)\
-        or prev_state == 179 and next_state == 177:
-        session_store['flags']['from_about'] = False
-        session_store['state'] = 177
-        payload_yes = 0
-        if session_store['flags']['game_context'] == "hello":
-            session_store['state'] = 178
-            payload_yes = 99
-        buttons.append({ "title": "Да", "payload": payload_yes, "hide": True })
-        buttons.append({ "title": "Нет", "payload": 104, "hide": True })
+
+    # if (prev_state == 120 and next_state != 118)\
+    #     or prev_state == 179 and next_state == 177:
+    #     session_store['flags']['from_about'] = False
+    #     session_store['state'] = 177
+    #     payload_yes = 0
+    #     if session_store['flags']['game_context'] == "hello":
+    #         session_store['state'] = 178
+    #         payload_yes = 99
+    #     buttons.append({ "title": "Да", "payload": payload_yes, "hide": True })
+    #     buttons.append({ "title": "Нет", "payload": 104, "hide": True })
 
     # if session_store['flags']['commandhandler'] != None:
     #     # программное добавление кнопок
