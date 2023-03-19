@@ -77,6 +77,9 @@ def set_next_state(session_store, next_state):
     buttons = []
     prev_state = session_store['state']
 
+    if next_state == session_store['flags']['return_state']:
+        session_store['flags']['return_state'] = None
+
 # ------ условные переходы ---------
     if next_state == 139:
         session_store['flags']['state_after_cardHandle'] = 143
@@ -127,7 +130,7 @@ def set_next_state(session_store, next_state):
         ret_st = session_store['flags']['return_state']
         if session_store['flags']['from_about']:
             ret_st = 179
-            buttons.append({ "title": "Назад", "payload": ret_st, "hide": True })
+        buttons.append({ "title": "Назад", "payload": ret_st, "hide": True })
         
         # if session_store['state'] == 0:
         #     session_store['flags']['return_state']

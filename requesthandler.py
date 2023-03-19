@@ -63,15 +63,38 @@ class datarequest():
         
 
     def getSkillFromBase(self):
+        text = "что-то пошло не так. попробуйте ещё раз."
+
+        # Среди всех описаний из базы данных находим наиболее похожее с запрашиваемой Алисой картой
         card_name = card_recognition(self.DESCRIPTIONS, self.from_Alice)
+        
+        prev_state = self.session_store['state']
+
+        if self.session_store['flags']['return_state'] != None:
+            prev_state = self.session_store['flags']['return_state']
+
+        buttons = [
+            {
+                "title": "Назад",
+                "payload": prev_state,
+                "hide": True
+            }
+        ]
 
         baseinstance = Base()
-        baseState = baseinstance.connect()
-        if baseState == 0:
-            return "не подключились к базе", None
-        
-        #print(baseinstance.getCardDescFrombase(card))
-        return baseinstance.getSkillDescFrombase(card_name)[0]#, "act_info"
+        if baseinstance.connect():
+            self.session_store['flags']['commandhandler'] = "card_info"
+            if self.session_store['flags']['return_state'] == None:
+                self.session_store['flags']['return_state'] = self.session_store['state']
+
+            text = baseinstance.getSkillDescFrombase(card_name)
+            text = text+ ' чтобы прлдолжить скажите "назад"'
+            self.session_store['flags']['custom_repeat'] = text
+            self.session_store['state'] = 0
+            self.session_store['buttons'] = buttons
+            self.session_store['flags']['last_card_name'] = card_name
+
+        return text
 
     def help_f(self):
         # перейти в 118 состояние и вернуться
@@ -112,28 +135,17 @@ class datarequest():
 
         return alicehandler.set_next_state(self.session_store, 119)
 
-    # def commandflow(self, next_state_id):
-    #     baseinstance = Base()
-    #     baseState = baseinstance.connect()
-    #     if baseState == 0:
-    #         return "не подключились к базе"
-
-    #     if self.cur_state == 118:
-    #         self.event['state']['session']['flags']['end_commandhandler'] = True
-
-    #     text = baseinstance.getStateOut(next_state_id)
-
-    #     self.event['state']['session']['state'] = next_state_id
-    #     return text
-
     requestSamples = {
             'как работает карта':       getCardDescription,
             'как работает свойство':    getSkillFromBase  ,
+            'как работает':               getCardDescription,
             'что делает карта':         getCardDescription,
             'что делает свойство':      getSkillFromBase  ,
             'что делает':               getCardDescription,
             'помощь':                   help_f            ,
+            'помоги':                   help_f            ,
             'повтори':                  repeat            ,
+            'ещё раз':                  repeat            ,
             'напиши разработчику':      feedback          ,
             'напиши разработчикам':     feedback          ,
             'что ты умеешь':           about             
@@ -182,39 +194,49 @@ class datarequest():
             ]
 
             return text, end, debug, self.session_store
-
+        
+        keystates = [139, 163, 187, 189, 195, 214]
         # громилы / адепты / последователи
-        if self.session_store['state'] == 139:
-            self.session_store['state'] = -10
+        if self.session_store['state'] in keystates:
             mentioned_cards = {
                 "Громила": False,
                 "Последователь": False,
                 "Адепт" : False
             }
+            detected = []
+            # для всех токенов
             for token in tokens:
-                for orig in mentioned_cards.keys():
-                    syno = card_recognition(self.mainDESCRIPTIONS[1], token)
-                    for descr in self.mainDESCRIPTIONS:
-                        if self.mainDESCRIPTIONS[1] == syno and self.mainDESCRIPTIONS[0] in mentioned_cards:
-                            mentioned_cards[mainDESCRIPTIONS[0]] = True
+                # ищем совпадения среди синонимов
+                det = card_recognition(self.mainDESCRIPTIONS[1], token)
 
-            outstr = ""
+                # для адептов громил и последователей
+                for orig in mentioned_cards.keys():
+                    if det.lower() == orig.lower():
+                        mentioned_cards[orig] = True
+                        
+            debug['mainDESCRIPTIONS'] = self.mainDESCRIPTIONS
+            debug['mentioned_cards'] = mentioned_cards
+            debug['detected'] = detected
+            
+            out_descrs = []
             for key in mentioned_cards.keys():
                 if mentioned_cards[key]:
                     self.from_Alice = key
-                    outstr = outstr + self.getCardDescription()
+                    out_descrs.append(self.getCardDescription())
+                    out_descrs.append(" ")
             
-            if outstr == "":
-                outstr = "Не услышала названия карт. Поптобуйте ещё раз их назвать"
-            else:
-                outstr = outstr + "Все ли свойства карт вам понятны?"
+            outstr = "Не услышала названия карт. Поптобуйте ещё раз их назвать"
+            
+            if len(out_descrs) > 0:
+                self.session_store['state'] = -10
+                outstr = "".join(out_descrs) + "Все ли свойства карт вам понятны?"
 
             if len(outstr) > 1024:
                 outstr = outstr[:1024]
 
             self.session_store['buttons'] = [
-                { "title": "Да", "payload": -4, "hide": True },
-                { "title": "Нет", "payload": self.session_store['flags']['state_after_cardHandle'], "hide": True }
+                { "title": "Да", "payload": self.session_store['flags']['state_after_cardHandle'], "hide": True },
+                { "title": "Нет", "payload": 144, "hide": True }
             ]
 
             return outstr, end, debug, self.session_store
@@ -254,22 +276,6 @@ class datarequest():
                 next_state = int(str(min_distance_item["payload"])[1:-1])
 
             text = alicehandler.set_next_state(self.session_store, next_state)
-        
-        # # проверка переходов по не сценарным кнопкам
-        # if 'commandhandler' in event['state']['session']['flags']:
-        #     arg = str(req.lstrip())
-
-        #     if arg != None:
-        #         arg = regex.sub('[,+-]', '', arg)
-        #     debug['is subflow'] = True
-        #     debug['subflow cmd'] = arg
-        #     debug['last_buttons'] = event['state']['session']['last_buttons']
-        #     if arg != None:
-        #         for btn in event['state']['session']['last_buttons']:
-        #             if btn['title'].lower() == arg:
-        #                 text = self.commandflow(int(str(btn['payload'])[1:-1]))
-        #                 debug['is sub flow'] = True
-        #                 break
 
         return text, end, debug, self.session_store
 

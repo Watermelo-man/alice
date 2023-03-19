@@ -114,12 +114,17 @@ class Base():
         cur.execute(query)
         ret = cur.fetchall()
         
+        ans = None
         if ret == None:
             return ("Названия карт и свойств из базы не получены. Попробуйте позже",)
-
+        else:
+            ans = [[],[]]
+            for row in ret:
+                ans[0].append(row[0])
+                ans[1].append(row[1])
         cur.close()
         self.base.close()
-        return ret
+        return ans
 
     def getStateOut(self, current_outId:str, session_store = None) -> str:
 
@@ -149,7 +154,7 @@ class Base():
                     text = self.getCardDetailedDescr(session_store['flags']['last_card_name'])
                     # if session_store['flags']['from_about'] == False:
                     #     text = text + return_text
-                    text = text + return_text
+                    text = text + " " + return_text
                     if len(text) > 1024:
                         text = text[:1024]
                     return text
