@@ -117,7 +117,8 @@ class Base():
         
         return_text = "чтобы вернуться к игре скажите назад"
 
-        if int(current_outId) == 0:
+        cur_id = int(current_outId)
+        if cur_id == 0 or cur_id == -4 or cur_id == -5:
             return return_text
         
         else:
@@ -129,7 +130,7 @@ class Base():
                     text = self.getCardDetailedDescr(session_store['flags']['last_card_name'])
                     # if session_store['flags']['from_about'] == False:
                     #     text = text + return_text
-                    
+                    text = text + return_text
                     if len(text) > 1024:
                         text = text[:1024]
                     return text

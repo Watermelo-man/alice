@@ -102,7 +102,10 @@ class datarequest():
         return text#, "repeat"
 
     def feedback(self):
-        return "ещё не доделали"#, "feedback"
+        self.session_store['flags']['commandhandler'] = "feedback"
+        self.session_store['flags']['return_state'] = self.session_store['state']
+        self.session_store['state'] = 123
+        return "Расскажите что нужно передать."
 
     def about(self):
         self.session_store['flags']['commandhandler'] = "about_app"
@@ -128,10 +131,12 @@ class datarequest():
             'как работает карта':       getCardDescription,
             'как работает свойство':    getSkillFromBase  ,
             'что делает карта':         getCardDescription,
+            'что делает свойство':      getSkillFromBase  ,
             'что делает':               getCardDescription,
             'помощь':                   help_f            ,
             'повтори':                  repeat            ,
             'напиши разработчику':      feedback          ,
+            'напиши разработчикам':     feedback          ,
             'что ты умеешь':           about             
             # 'алиса хватит':shut,
             # 'хватит':shut,
@@ -167,6 +172,20 @@ class datarequest():
 
         incoming_command = req.lower()
         incoming_command = regex.sub('[,+-]', '', incoming_command)
+        debug['incoming_cmd'] = str(incoming_command)
+
+        # проверка ввода для отправки фидбека.
+        if self.session_store['flags']['commandhandler'] == 'feedback' \
+            and session_store['state'] == 123:
+            self.session_store['flags']['feedback'] = incoming_command
+            text = "Повторяю." + incoming_command + '. Отправляем?'
+            session_store['state'] = -3
+            session_store['buttons'] = [
+                { "title": "Да", "payload": -4, "hide": True },
+                { "title": "Нет", "payload": -5, "hide": True }
+            ]
+
+            return text, end, debug, self.session_store
 
         args = {}
         # проверка входа в обработчик вопроса

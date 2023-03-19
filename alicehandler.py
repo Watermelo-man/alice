@@ -88,6 +88,13 @@ def set_next_state(session_store, next_state):
             session_store['flags']['commandhandler'] = 'about_app'
             return set_next_state(session_store, 179)
 
+        if next_state == -4 or next_state == -5:
+            if next_state == -4:
+                bot.send_message(-1001609876238 , session_store['flags']['feedback'] ,message_thread_id = 1896)
+            del session_store['flags']['feedback']
+            buttons.append({ "title": "Назад", "payload": session_store['flags']['return_state'], "hide": True })
+            next_state = 0
+
         try:
             text = baseinstance.getStateOut(next_state, session_store)
         except Exception as e:
@@ -97,7 +104,7 @@ def set_next_state(session_store, next_state):
         ret_st = session_store['flags']['return_state']
         if session_store['flags']['from_about']:
             ret_st = 179
-        buttons.append({ "title": "Назад", "payload": ret_st, "hide": True })
+            buttons.append({ "title": "Назад", "payload": ret_st, "hide": True })
         
         # if session_store['state'] == 0:
         #     session_store['flags']['return_state']
