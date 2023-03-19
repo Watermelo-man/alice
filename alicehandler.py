@@ -77,6 +77,29 @@ def set_next_state(session_store, next_state):
     buttons = []
     prev_state = session_store['state']
 
+# ------ условные переходы ---------
+    if next_state == 139:
+        session_store['flags']['state_after_cardHandle'] = 143
+
+    if next_state == 163:
+        session_store['flags']['state_after_cardHandle'] = 168
+
+    if next_state == 187:
+        session_store['flags']['state_after_cardHandle'] = 184
+
+    if next_state == 189:
+        session_store['flags']['state_after_cardHandle'] = 188
+
+    if next_state == 195:
+        session_store['flags']['state_after_cardHandle'] = 207
+
+    # if next_state == 188:
+    #     session_store['flags']['state_after_cardHandle'] = 204
+
+    if next_state == 214:
+        session_store['flags']['state_after_cardHandle'] = 219
+# ----------------------------------
+
     session_store['flags']['custom_repeat'] = None
     if prev_state == 179:
         session_store['flags']['from_about'] = False
@@ -126,6 +149,19 @@ def set_next_state(session_store, next_state):
             next_state = 177
             buttons.append({ "title": "Да", "payload": session_store['flags']['return_state'], "hide": True })
 
+    if next_state == 144:
+        next_next_state = None
+
+        for btn in session_store['buttons']:
+            if btn['title'].lower() == "да":
+                if type(btn['payload']) == int:
+                    next_next_state = btn['payload']
+                else:
+                    next_next_state = int(str(btn['payload'])[1:-1])
+                break
+
+        if next_next_state != None:
+            session_store['flags']['return_state'] = next_next_state
 
     # помощь
     if next_state == 118:
@@ -207,8 +243,9 @@ def handler(event,context):
 
     #обработка произвольного ввода        
     request = event['request']['command']
+    tokens = event['request']['nlu']['tokens']
 
-    text, end, debug, session_store = Datarequest.scanRequest(request, session_store, bot)
+    text, end, debug, session_store = Datarequest.scanRequest(request, session_store, bot, tokens)
     return make_response(event, text, debug, session_store, end)
 
     # # обработка переходов

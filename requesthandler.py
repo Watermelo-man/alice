@@ -1,4 +1,3 @@
-import random
 from base import *
 import alicehandler
 
@@ -16,8 +15,8 @@ class datarequest():
         if baseState == 0:
             return "не подключились к базе", None
 
-        self.DESCRIPTIONS=baseinstance.getDescriptionsFromBase()
-    
+        self.DESCRIPTIONS=baseinstance.getDescriptionsFromBase(False)
+        self.mainDESCRIPTIONS=baseinstance.getmainDescriptionsFromBase()
       
     # def shut(self):
     #     self.isShtut = "true"
@@ -157,13 +156,10 @@ class datarequest():
         '''
 
     # возвращаем текст, флаг выхода, отладочную инфу
-    def scanRequest(self,req:str, session_store, bot):
+    def scanRequest(self,req:str, session_store, bot, tokens):
         self.bot = bot
         self.session_store = session_store
-        text = random.choice(["Извините, запрос непонятен",
-                        "Вы не могли бы повторить",
-                        "Извините, что-то со слухом, повторите пожалуста",
-                        "Что-что?"])
+        text = "Извините, запрос непонятен"
         end = False
         debug = {
             'is main flow'  : False,
@@ -179,13 +175,49 @@ class datarequest():
             and session_store['state'] == 123:
             self.session_store['flags']['feedback'] = incoming_command
             text = "Повторяю." + incoming_command + '. Отправляем?'
-            session_store['state'] = -3
-            session_store['buttons'] = [
+            self.session_store['state'] = -3
+            self.session_store['buttons'] = [
                 { "title": "Да", "payload": -4, "hide": True },
                 { "title": "Нет", "payload": -5, "hide": True }
             ]
 
             return text, end, debug, self.session_store
+
+        # громилы / адепты / последователи
+        if self.session_store['state'] == 139:
+            self.session_store['state'] = -10
+            mentioned_cards = {
+                "Громила": False,
+                "Последователь": False,
+                "Адепт" : False
+            }
+            for token in tokens:
+                for orig in mentioned_cards.keys():
+                    syno = card_recognition(self.mainDESCRIPTIONS[1], token)
+                    for descr in self.mainDESCRIPTIONS:
+                        if self.mainDESCRIPTIONS[1] == syno and self.mainDESCRIPTIONS[0] in mentioned_cards:
+                            mentioned_cards[mainDESCRIPTIONS[0]] = True
+
+            outstr = ""
+            for key in mentioned_cards.keys():
+                if mentioned_cards[key]:
+                    self.from_Alice = key
+                    outstr = outstr + self.getCardDescription()
+            
+            if outstr == "":
+                outstr = "Не услышала названия карт. Поптобуйте ещё раз их назвать"
+            else:
+                outstr = outstr + "Все ли свойства карт вам понятны?"
+
+            if len(outstr) > 1024:
+                outstr = outstr[:1024]
+
+            self.session_store['buttons'] = [
+                { "title": "Да", "payload": -4, "hide": True },
+                { "title": "Нет", "payload": self.session_store['flags']['state_after_cardHandle'], "hide": True }
+            ]
+
+            return outstr, end, debug, self.session_store
 
         args = {}
         # проверка входа в обработчик вопроса

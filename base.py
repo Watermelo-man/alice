@@ -84,7 +84,7 @@ class Base():
             self.base.close()
         return ret, ('input_id', 'input_text', 'next_out_id'), query
         
-    def getDescriptionsFromBase(self) ->list:
+    def getDescriptionsFromBase(self, close = True) ->list:
         cur = self.base.cursor()
         query = "SELECT synonyms.synonym FROM synonyms"
         cur.execute(query)
@@ -98,9 +98,28 @@ class Base():
         for el in ret:
             res.append(el[0])
 
+        if close:
+            cur.close()
+            self.base.close()
+        return res
+
+    def getmainDescriptionsFromBase(self) ->list:
+        cur = self.base.cursor()
+        query = 'SELECT Descriptions.name, synonyms.synonym \
+            FROM Descriptions INNER JOIN synonyms ON \
+            synonyms.description_id = Descriptions.id \
+            WHERE Descriptions.name = "Громила" \
+            OR Descriptions.name = "Адепт" \
+            OR Descriptions.name = "Последователь"'
+        cur.execute(query)
+        ret = cur.fetchall()
+        
+        if ret == None:
+            return ("Названия карт и свойств из базы не получены. Попробуйте позже",)
+
         cur.close()
         self.base.close()
-        return res
+        return ret
 
     def getStateOut(self, current_outId:str, session_store = None) -> str:
 
