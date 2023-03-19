@@ -5,7 +5,6 @@ import telebot
 bot = telebot.TeleBot('6058714565:AAHPhL2Bs_i9lyYaf0bvqcL1e-RkOhH85fU')
 Datarequest = datarequest()
 
-
 def send_log(event, text):
     # отправляем лог
     screen = "screen" in event["meta"]["interfaces"]
@@ -61,10 +60,12 @@ def session_start_handler(event):
         session_store = {
             'state' : start_state,
             'flags' : {
+                'from_about': False,
                 'commandhandler' : None,
                 'return_state' : None,
                 'custom_repeat' : None,
-                'last_card_name' : None
+                'last_card_name' : None,
+                'game_context': "hello"
             },
             'buttons' : buttons
         }
@@ -74,11 +75,18 @@ def session_start_handler(event):
 
 def set_next_state(session_store, next_state):
     buttons = []
+    prev_state = session_store['state']
 
     session_store['flags']['custom_repeat'] = None
 
     baseinstance = Base()
     if next_state <= 0:
+        if session_store['flags']['from_about'] and \
+        (next_state == 0 or next_state == -2):
+            session_store['flags']['from_about'] = False
+            session_store['flags']['commandhandler'] = 'about_app'
+            return set_next_state(session_store, 179)
+
         try:
             text = baseinstance.getStateOut(next_state, session_store)
         except Exception as e:
@@ -88,14 +96,38 @@ def set_next_state(session_store, next_state):
         
         # if session_store['state'] == 0:
         #     session_store['flags']['return_state']
-
         session_store['state'] = next_state
         session_store['buttons'] = buttons
         return text
 
+    # помощь
     if next_state == 118:
         buttons.append({ "title": "Назад", "payload": session_store['flags']['return_state'], "hide": True })
-        session_store['buttons'] = buttons
+
+    # конец приветствия
+    if next_state == 106:
+        session_store['flags']['game_context'] = 'preparing'
+
+    # конец подготовки
+    if next_state == 137 \
+        or next_state == 160 \
+        or next_state == 176:
+        session_store['flags']['game_context'] = 'game'
+    
+    # первое состояние "что ты умеещь"
+    if prev_state == 119:
+        session_store['flags']['commandhandler'] = 'about_app'
+
+    if (prev_state == 120 and next_state != 118)\
+        or prev_state == 179 and next_state == 177:
+        session_store['flags']['from_about'] = False
+        session_store['state'] = 177
+        payload_yes = 0
+        if session_store['flags']['game_context'] == "hello":
+            session_store['state'] = 178
+            payload_yes = 99
+        buttons.append({ "title": "Да", "payload": payload_yes, "hide": True })
+        buttons.append({ "title": "Нет", "payload": 104, "hide": True })
 
     # if session_store['flags']['commandhandler'] != None:
     #     # программное добавление кнопок

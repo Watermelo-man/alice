@@ -22,11 +22,15 @@ class datarequest():
     #     self.isShtut = "true"
 
     def getCardDescription(self):
+        text = "что-то пошло не так. попробуйте ещё раз."
 
         # Среди всех описаний из базы данных находим наиболее похожее с запрашиваемой Алисой картой
         card_name = card_recognition(self.DESCRIPTIONS, self.from_Alice)
         
-        text = "что-то пошло не так. попробуйте ещё раз."
+        prev_state = self.session_store['state']
+        
+        # if prev_state == 121:
+        #     self.session_store['flags']['from_about'] = True
 
         buttons = [
             {
@@ -43,9 +47,12 @@ class datarequest():
 
         baseinstance = Base()
         if baseinstance.connect():
+            if self.session_store['flags']['commandhandler'] == "about_app":
+                self.session_store['flags']['from_about'] = True
             self.session_store['flags']['commandhandler'] = "card_info"
             if self.session_store['flags']['return_state'] == None:
                 self.session_store['flags']['return_state'] = self.session_store['state']
+
             text = baseinstance.getCardDescFrombase(card_name)
             self.session_store['flags']['custom_repeat'] = text
             self.session_store['state'] = -1
@@ -97,7 +104,10 @@ class datarequest():
         return "ещё не доделали"#, "feedback"
 
     def about(self):
-        return "ещё не доделали"#, "about_app"
+        self.session_store['flags']['commandhandler'] = "about_app"
+        self.session_store['flags']['return_state'] = self.session_store['state']
+
+        return alicehandler.set_next_state(self.session_store, 119)
 
     # def commandflow(self, next_state_id):
     #     baseinstance = Base()
@@ -116,12 +126,12 @@ class datarequest():
     requestSamples = {
             'как работает карта':       getCardDescription,
             'как работает свойство':    getSkillFromBase  ,
-            'что делает эта карта':     getCardDescription,
+            'что делает карта':         getCardDescription,
             'что делает':               getCardDescription,
             'помощь':                   help_f            ,
             'повтори':                  repeat            ,
             'напиши разработчику':      feedback          ,
-            'что ты умеешь?':           about             
+            'что ты умеешь':           about             
             # 'алиса хватит':shut,
             # 'хватит':shut,
         }
@@ -154,10 +164,12 @@ class datarequest():
         incoming_command = req.lower()
         incoming_command = regex.sub('[,+-]', '', incoming_command)
 
+        args = {}
         # проверка входа в обработчик вопроса
         for key in self.requestSamples.keys():
             if key == incoming_command[:self.requestLength[key]]:#заменить на findall или на работу по токенам
                 arg = str(incoming_command[self.requestLength[key]:])
+                args[key] = arg
 
                 if arg != None:
                     self.from_Alice = arg
@@ -165,6 +177,7 @@ class datarequest():
                 debug['is subflow start'] = True
                 return text, end, debug, self.session_store
 
+        debug['requestSamples'] = self.requestSamples
         if self.session_store['buttons']:
             min_distance_item = self.session_store['buttons'][0]
             min_distance = Levenshtein.distance(min_distance_item['title'].lower(), incoming_command)
@@ -216,7 +229,7 @@ def card_recognition(card_names: list, card_from_Alice: str) -> str:
             card_distance_min = current_distance
             min_distance_idx = i
     
-    treshhold_condition = card_distance_min < len(card_names[min_distance_idx])/2
+    treshhold_condition = card_distance_min < len(card_from_Alice)/2
 
     ret = card_names[min_distance_idx] if treshhold_condition else ""
 
