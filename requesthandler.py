@@ -1,3 +1,4 @@
+import random
 from base import *
 import alicehandler
 
@@ -154,7 +155,10 @@ class datarequest():
     def scanRequest(self,req:str, session_store, bot):
         self.bot = bot
         self.session_store = session_store
-        text = "Извините, запрос непонятен"
+        text = random.choice(["Извините, запрос непонятен",
+                        "Вы не могли бы повторить",
+                        "Извините, что-то со слухом, повторите пожалуста",
+                        "Что-что?"])
         end = False
         debug = {
             'is main flow'  : False,
