@@ -101,6 +101,9 @@ def set_next_state(session_store, next_state):
 
     if next_state == 214:
         session_store['flags']['state_after_cardHandle'] = 219
+        
+    if next_state == 230:
+        session_store['flags']['state_after_cardHandle'] = 151
 # ----------------------------------
 
     session_store['flags']['custom_repeat'] = None

@@ -134,6 +134,10 @@ class datarequest():
         self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 119)
+    
+    def whatCardsAreThere(self):
+        #TODO: перечислять вообще все карты??
+        pass
 
     requestSamples = {
             'как работает карта':       getCardDescription,
@@ -148,7 +152,8 @@ class datarequest():
             'ещё раз':                  repeat            ,
             'напиши разработчику':      feedback          ,
             'напиши разработчикам':     feedback          ,
-            'что ты умеешь':           about             
+            'что ты умеешь':            about             ,
+            'какие карты есть':         whatCardsAreThere
             # 'алиса хватит':shut,
             # 'хватит':shut,
         }
@@ -195,7 +200,7 @@ class datarequest():
 
             return text, end, debug, self.session_store
         
-        keystates = [139, 163, 187, 189, 195, 214]
+        keystates = [139, 163, 187, 189, 195, 214, 230]
         # громилы / адепты / последователи
         if self.session_store['state'] in keystates:
             mentioned_cards = {
