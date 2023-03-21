@@ -23,9 +23,9 @@ class datarequest():
         "отложил", "посчитал", "сосчитал", "проверил", "получил", "раздал", "положил",
         "раскрыл", "выполнил", "закончил", "взял", "подготовил"]
 
-        self.rejected = ["нет", "неа", "не-а", "не надо", "не хочу", "не хотим", "не играл",
-        "не потребуется", "не так", "не все", "не понятны", "не понял", "не появились",
-        "не появлялись"]
+        self.rejected = ["нет", "неа", "не", "не-не", "не-а", "не надо", "не хочу",
+        "не хотим", "не играл", "не потребуется", "не так", "не все", "не понятны",
+        "не понял", "не появились", "не появлялись"]
 
         self.descr_state = {}
         self.descr_state["Громила"] = baseinstance.getStateOut(141, None, False)
@@ -241,33 +241,24 @@ class datarequest():
     def tokenscanRequest():
         '''
 
-    # возвращаем текст, флаг выхода, отладочную инфу
-    def scanRequest(self,req:str, session_store, bot, tokens):
-        self.bot = bot
-        self.session_store = session_store
-        text = "Извините, запрос непонятен"
-        end = False
-        debug = {}
-
-        incoming_command = req.lower()
-        incoming_command = regex.sub('[,+-]', '', incoming_command)
-        debug['incoming_cmd'] = str(incoming_command)
-
-        # проверка ввода для отправки фидбека.
+    def incomingFeedback_handler(self):
         if self.session_store['flags']['commandhandler'] == 'feedback' \
             and session_store['state'] == 123:
-            self.session_store['flags']['feedback'] = incoming_command
-            text = "Повторяю. " + incoming_command + '. Отправляем?'
+
+            processed = True
+            self.session_store['flags']['feedback'] = self.incoming_command
+            self.text = "Повторяю. " + self.incoming_command + '. Отправляем?'
             self.session_store['state'] = -3
             self.session_store['buttons'] = [
                 { "title": "Да", "payload": -4, "hide": True },
                 { "title": "Нет", "payload": -5, "hide": True }
             ]
+            
+            raise Exception(True)
 
-            return text, end, debug, self.session_store
-        
+    def incomingJoinMainCardDescr_handler(self):
         keystates = [139, 163, 187, 189, 195, 214, 230]
-        # громилы / адепты / последователи
+        
         if self.session_store['state'] in keystates:
             mentioned_cards = {
                 "Громила": False,
@@ -306,45 +297,30 @@ class datarequest():
                 { "title": "Нет", "payload": 144, "hide": True }
             ]
 
-            return outstr, end, debug, self.session_store
+            raise Exception(True)
 
-        args = {}
-
+    def incomingQuestion_handler(self):
         btn_titles = []
         for btn in self.session_store['buttons']:
             btn_titles.append(btn['title'].lower())
-            
-        debug['btn_titles'] = btn_titles
 
-        # проверка входа в обработчик вопроса
         for key in self.requestSamples.keys():
-            if key == incoming_command[:self.requestLength[key]]:#заменить на findall или на работу по токенам
-                arg = str(incoming_command[self.requestLength[key]:])
-                args[key] = arg
+            if key == self.incoming_command[:self.requestLength[key]]:#заменить на findall или на работу по токенам
+                arg = str(self.incoming_command[self.requestLength[key]:])
 
-                debug['is subflow start'] = True
+                self.debug['is subflow start'] = True
                 if arg != None and (("назад" in btn_titles) == False):
                     self.from_Alice = arg
-                    text = self.requestSamples[key](self)
-                    return text, end, debug, self.session_store
+                    self.text = self.requestSamples[key](self)
+                    raise Exception(True)
 
-        self.from_Alice = incoming_command
-        just_card = self.getCardDescription()
-        if just_card != "что-то пошло не так. попробуйте ещё раз."\
-            and just_card != "Простите, не расслышала название карты":
-            text = just_card
-        
-        # обработка кнопок
-
-        in_accepted = card_recognition(self.accepted, incoming_command)
-        in_rejected = card_recognition(self.rejected, incoming_command)
-
-        debug['in_accepted'] = in_accepted
-        debug['in_rejected'] = in_rejected
+    def incomingAcceptOrRejrct_handler(self):
+        in_accepted = card_recognition(self.accepted, self.incoming_command)
+        in_rejected = card_recognition(self.rejected, self.incoming_command)
 
         if self.session_store['buttons']:
             min_distance_item = self.session_store['buttons'][0]
-            min_distance = Levenshtein.distance(min_distance_item['title'].lower(), incoming_command)
+            min_distance = Levenshtein.distance(min_distance_item['title'].lower(), self.incoming_command)
 
             for btn in self.session_store['buttons']:
                 if (in_accepted != "" and btn['title'].lower() in self.accepted) or \
@@ -353,25 +329,59 @@ class datarequest():
                     min_distance_item = btn
                     break
 
-                current_distance = Levenshtein.distance(btn['title'].lower(), incoming_command)
+                current_distance = Levenshtein.distance(btn['title'].lower(), self.incoming_command)
                 if min_distance > current_distance:
                     min_distance = current_distance
                     min_distance_item = btn
             
-            treshhold_condition = min_distance < len(incoming_command) / 2
+            treshhold_condition = min_distance < len(self.incoming_command) / 2
 
-            if not treshhold_condition:
-                return text, end, debug, self.session_store
+            if treshhold_condition:
+                if type(min_distance_item["payload"]) == int:
+                    next_state = min_distance_item["payload"]
+                else:
+                    next_state = int(str(min_distance_item["payload"])[1:-1])
 
-            if type(min_distance_item["payload"]) == int:
-                next_state = min_distance_item["payload"]
-            else:
-                next_state = int(str(min_distance_item["payload"])[1:-1])
+                self.text = alicehandler.set_next_state(self.session_store, next_state)
+                raise Exception(True)
 
-            text = alicehandler.set_next_state(self.session_store, next_state)
-            return text, end, debug, self.session_store
+    # возвращаем текст, флаг выхода, отладочную инфу
+    def scanRequest(self,req:str, session_store, bot, tokens):
 
-        return text, end, debug, self.session_store
+        # инициализация парсера произвольного ввода
+        self.bot = bot
+        self.session_store = session_store
+        self.text = "Извините, запрос непонятен"
+        self.end = False
+        self.debug = {}
+        self.incoming_command = req.lower()
+        self.incoming_command = regex.sub('[,+-]', '', self.incoming_command)
+        self.debug['incoming_cmd'] = str(self.incoming_command)
+
+        try:
+            # проверка ввода для отправки фидбека.
+            self.incomingFeedback_handler()
+            
+            # громилы / адепты / последователи
+            self.incomingFeedback_handler()
+
+            # обработка входов в обработчики вопросов
+            self.incomingQuestion_handler()
+
+            # обработка кнопок Да/Нет
+            self.incomingAcceptOrRejrct_handler()
+
+
+            # если это не ввод фидбека или ветвления и не вопрос
+            # то возможно это просто название карты после "не расслышала название карты"
+            self.from_Alice = self.incoming_command
+            just_card = self.getCardDescription()
+            if just_card != "что-то пошло не так. попробуйте ещё раз."\
+                and just_card != "Простите, не расслышала название карты":
+                self.text = just_card
+        
+        finally:
+            return self.text, self.end, self.debug, self.session_store
 
 
 def card_recognition(card_names: list, card_from_Alice: str) -> str:
