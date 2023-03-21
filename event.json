@@ -10,8 +10,8 @@
     }
   },
   "session": {
-    "message_id": 3,
-    "session_id": "1d9c6d20-bf79-4b54-a1f9-ca4db7b78898",
+    "message_id": 1,
+    "session_id": "3dfb4a0a-cd07-40d6-983a-eb8645c7620f",
     "skill_id": "e72b90d3-4512-43ba-be00-f2080fb678c8",
     "user": {
       "user_id": "D40CB55A178BA34329CF61E7AB9F28667115ED8F78BDC7D8F3E02FC2A8DC1694"
@@ -23,8 +23,6 @@
     "user_id": "EDB26A2C39AEF588C505AC2AC63FECDD2808B9CDDA60E98DD4713496593E9A5F"
   },
   "request": {
-    "command": "как работает карта дагон",
-    "original_utterance": "как работает врчить кту",
     "nlu": {
       "tokens": [
         "нет"
@@ -32,10 +30,33 @@
       "entities": [],
       "intents": {}
     },
-    "markup": {
-      "dangerous_context": false
+    "payload": "{99}",
+    "type": "ButtonPressed"
+  },
+  "state": {
+    "session": {
+      "state": 107,
+      "flags": {
+        "commandhandler": null,
+        "return_state": null,
+        "custom_repeat": null,
+        "last_card_name": null
+      },
+      "buttons": [
+        {
+          "title": "Нет",
+          "payload": "{99}",
+          "hide": true
+        },
+        {
+          "title": "Да",
+          "payload": "{119}",
+          "hide": true
+        }
+      ]
     },
-    "type": "SimpleUtterance"
+    "user": {},
+    "application": {}
   },
   "version": "1.0"
 }
