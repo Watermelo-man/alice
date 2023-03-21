@@ -126,7 +126,7 @@ class Base():
         self.base.close()
         return ans
 
-    def getStateOut(self, current_outId:str, session_store = None) -> str:
+    def getStateOut(self, current_outId:str, session_store = None, close = True) -> str:
 
         if session_store == None:
             cur = self.base.cursor()
@@ -135,8 +135,9 @@ class Base():
             cur.execute(query)
             ret = cur.fetchone()
 
-            cur.close()
-            self.base.close()
+            if close:
+                cur.close()
+                self.base.close()
             return ret[0]
         
         return_text = "чтобы вернуться к игре скажите назад"

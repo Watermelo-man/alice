@@ -15,6 +15,23 @@ class datarequest():
         if baseState == 0:
             return "не подключились к базе", None
 
+        self.accepted = ["да", "ага", "угу", "давай", "рассажи", "хочу",
+        "хотим", "перечисли", "да-да", "продолжим", "продолжаем", "играл", "напомни",
+        "потребуется", "конечно", "обязательно", "несомненно", "так", "верно", 
+        "всё так", "все", "понятны", "ясно", "всё ясно", "понятно", "понял", "появились",
+        "готово", "сделано", "погнали", "вперёд", "начинаем", "начнём", "достал",
+        "отложил", "посчитал", "сосчитал", "проверил", "получил", "раздал", "положил",
+        "раскрыл", "выполнил", "закончил", "взял", "подготовил"]
+
+        self.rejected = ["нет", "неа", "не-а", "не надо", "не хочу", "не хотим", "не играл",
+        "не потребуется", "не так", "не все", "не понятны", "не понял", "не появились",
+        "не появлялись"]
+
+        self.descr_state = {}
+        self.descr_state["Громила"] = baseinstance.getStateOut(141, None, False)
+        self.descr_state["Последователь"] = baseinstance.getStateOut(140, None, False)
+        self.descr_state["Адепт"] = baseinstance.getStateOut(142, None, False)
+        
         self.DESCRIPTIONS=baseinstance.getDescriptionsFromBase(False)
         self.mainDESCRIPTIONS=baseinstance.getmainDescriptionsFromBase()
       
@@ -46,7 +63,9 @@ class datarequest():
         ]
 
         baseinstance = Base()
-        if baseinstance.connect():
+        if card_name == None or card_name == "":
+            text = "Простите, не расслышала название карты"
+        elif baseinstance.connect():
             if self.session_store['flags']['commandhandler'] == "about_app":
                 self.session_store['flags']['from_about'] = True
             self.session_store['flags']['commandhandler'] = "card_info"
@@ -58,6 +77,7 @@ class datarequest():
             self.session_store['state'] = -1
             self.session_store['buttons'] = buttons
             self.session_store['flags']['last_card_name'] = card_name
+        
         
         return text
         
@@ -109,7 +129,20 @@ class datarequest():
             self.session_store['buttons'] = [ { "title": "Назад", "payload": self.session_store['state'], "hide": True } ]
             self.session_store['state'] = 118
         return text
-        
+
+    def card_example(self):
+        if self.session_store['flags']['return_state'] == None:
+            self.session_store['flags']['return_state'] = self.session_store['state']
+
+        return alicehandler.set_next_state(self.session_store, 124)
+
+    def back(self):
+        text = "Сейчас вернуться не получится."
+        if self.session_store['flags']['prev_state'] != None:
+            text = alicehandler.set_next_state(self.session_store, self.session_store['flags']['prev_state'])
+            self.session_store['flags']['prev_state'] = None
+
+        return text
 
     def repeat(self):
         text = "что-то пошло не так. попробуйте ещё раз."
@@ -125,13 +158,15 @@ class datarequest():
 
     def feedback(self):
         self.session_store['flags']['commandhandler'] = "feedback"
-        self.session_store['flags']['return_state'] = self.session_store['state']
+        if self.session_store['flags']['return_state'] == None:
+            self.session_store['flags']['return_state'] = self.session_store['state']
         self.session_store['state'] = 123
         return "Расскажите что нужно передать."
 
     def about(self):
         self.session_store['flags']['commandhandler'] = "about_app"
-        self.session_store['flags']['return_state'] = self.session_store['state']
+        if self.session_store['flags']['return_state'] == None:
+            self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 119)
     
@@ -139,21 +174,56 @@ class datarequest():
         #TODO: перечислять вообще все карты??
         pass
 
+    def to_start(self):
+        self.session_store['flags'] = {
+                'from_about': False,
+                'commandhandler' : None,
+                'return_state' : None,
+                'custom_repeat' : None,
+                'last_card_name' : None
+            }
+        return alicehandler.set_next_state(self.session_store, 106)
+
     requestSamples = {
             'как работает карта':       getCardDescription,
             'как работает свойство':    getSkillFromBase  ,
-            'как работает':               getCardDescription,
+            'как работает Действие':    getSkillFromBase  ,
             'что делает карта':         getCardDescription,
             'что делает свойство':      getSkillFromBase  ,
+            'что делает действие':      getSkillFromBase  ,
+            'что такое':                getSkillFromBase  ,
+            'кто такой':                getSkillFromBase  ,
+            'кто такие':                getSkillFromBase  ,
+            'что значит':               getSkillFromBase  ,
+            'как работает':             getCardDescription,
+            'как работают':             getCardDescription,
             'что делает':               getCardDescription,
+            'что делают':               getCardDescription,
             'помощь':                   help_f            ,
             'помоги':                   help_f            ,
+            'не понимаю':               help_f            ,
             'повтори':                  repeat            ,
             'ещё раз':                  repeat            ,
             'напиши разработчику':      feedback          ,
             'напиши разработчикам':     feedback          ,
+            'написать разработчику':    feedback          ,
+            'написать разработчикам':   feedback          ,
+            'что ты умеешь':           about             
+            'отправить разработчику':   feedback          ,
+            'отправить разработчикам':  feedback          ,
             'что ты умеешь':            about             ,
-            'какие карты есть':         whatCardsAreThere
+            'расскажи что ты умеешь':   about             ,
+            'давай играть':             to_start          ,
+            'начать игру':              to_start          ,
+            'начни игру':               to_start          ,
+            'начни сначала':            to_start          ,
+            'давай сыграем':            to_start          ,
+            'давай заново':             to_start          ,
+            'начать заново':            to_start          ,
+            'давай сначала':            to_start          ,
+            'какие бывают карты':       card_example      ,
+            'какие есть карты':         card_example      ,
+            'назад':                    back
             # 'алиса хватит':shut,
             # 'хватит':shut,
         }
@@ -178,10 +248,7 @@ class datarequest():
         self.session_store = session_store
         text = "Извините, запрос непонятен"
         end = False
-        debug = {
-            'is main flow'  : False,
-            'is subflow start'    : False
-        }
+        debug = {}
 
         incoming_command = req.lower()
         incoming_command = regex.sub('[,+-]', '', incoming_command)
@@ -191,7 +258,7 @@ class datarequest():
         if self.session_store['flags']['commandhandler'] == 'feedback' \
             and session_store['state'] == 123:
             self.session_store['flags']['feedback'] = incoming_command
-            text = "Повторяю." + incoming_command + '. Отправляем?'
+            text = "Повторяю. " + incoming_command + '. Отправляем?'
             self.session_store['state'] = -3
             self.session_store['buttons'] = [
                 { "title": "Да", "payload": -4, "hide": True },
@@ -208,6 +275,7 @@ class datarequest():
                 "Последователь": False,
                 "Адепт" : False
             }
+            
             detected = []
             # для всех токенов
             for token in tokens:
@@ -218,16 +286,11 @@ class datarequest():
                 for orig in mentioned_cards.keys():
                     if det.lower() == orig.lower():
                         mentioned_cards[orig] = True
-                        
-            debug['mainDESCRIPTIONS'] = self.mainDESCRIPTIONS
-            debug['mentioned_cards'] = mentioned_cards
-            debug['detected'] = detected
             
             out_descrs = []
             for key in mentioned_cards.keys():
                 if mentioned_cards[key]:
-                    self.from_Alice = key
-                    out_descrs.append(self.getCardDescription())
+                    out_descrs.append(self.descr_state[key])
                     out_descrs.append(" ")
             
             outstr = "Не услышала названия карт. Поптобуйте ещё раз их назвать"
@@ -247,24 +310,50 @@ class datarequest():
             return outstr, end, debug, self.session_store
 
         args = {}
+
+        btn_titles = []
+        for btn in self.session_store['buttons']:
+            btn_titles.append(btn['title'].lower())
+            
+        debug['btn_titles'] = btn_titles
+
         # проверка входа в обработчик вопроса
         for key in self.requestSamples.keys():
             if key == incoming_command[:self.requestLength[key]]:#заменить на findall или на работу по токенам
                 arg = str(incoming_command[self.requestLength[key]:])
                 args[key] = arg
 
-                if arg != None:
+                debug['is subflow start'] = True
+                if arg != None and (("назад" in btn_titles) == False):
                     self.from_Alice = arg
                     text = self.requestSamples[key](self)
-                debug['is subflow start'] = True
-                return text, end, debug, self.session_store
+                    return text, end, debug, self.session_store
 
-        debug['requestSamples'] = self.requestSamples
+        self.from_Alice = incoming_command
+        just_card = self.getCardDescription()
+        if just_card != "что-то пошло не так. попробуйте ещё раз."\
+            and just_card != "Простите, не расслышала название карты":
+            text = just_card
+        
+        # обработка кнопок
+
+        in_accepted = card_recognition(self.accepted, incoming_command)
+        in_rejected = card_recognition(self.rejected, incoming_command)
+
+        debug['in_accepted'] = in_accepted
+        debug['in_rejected'] = in_rejected
+
         if self.session_store['buttons']:
             min_distance_item = self.session_store['buttons'][0]
             min_distance = Levenshtein.distance(min_distance_item['title'].lower(), incoming_command)
 
             for btn in self.session_store['buttons']:
+                if (in_accepted != "" and btn['title'].lower() in self.accepted) or \
+                    (in_rejected != "" and btn['title'].lower() in self.rejected):
+                    min_distance = 0
+                    min_distance_item = btn
+                    break
+
                 current_distance = Levenshtein.distance(btn['title'].lower(), incoming_command)
                 if min_distance > current_distance:
                     min_distance = current_distance
@@ -281,6 +370,7 @@ class datarequest():
                 next_state = int(str(min_distance_item["payload"])[1:-1])
 
             text = alicehandler.set_next_state(self.session_store, next_state)
+            return text, end, debug, self.session_store
 
         return text, end, debug, self.session_store
 
