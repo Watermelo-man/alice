@@ -170,9 +170,9 @@ class datarequest():
 
         return alicehandler.set_next_state(self.session_store, 119)
     
-    def whatCardsAreThere(self):
-        #TODO: перечислять вообще все карты??
-        pass
+    # def whatCardsAreThere(self):
+    #     #TODO: перечислять вообще все карты??
+    #     pass
 
     def to_start(self):
         self.session_store['flags'] = {
@@ -208,7 +208,6 @@ class datarequest():
             'напиши разработчикам':     feedback          ,
             'написать разработчику':    feedback          ,
             'написать разработчикам':   feedback          ,
-            'что ты умеешь':           about             
             'отправить разработчику':   feedback          ,
             'отправить разработчикам':  feedback          ,
             'что ты умеешь':            about             ,
