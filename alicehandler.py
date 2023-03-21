@@ -29,7 +29,6 @@ def make_response(event, text, debug, session_store, end = False):
     send_log(event, text)
 
     #сортировка кнопок
-    print(session_store['buttons'][:])
     sort_buttons = []
 
     for session_butt_instance in session_store['buttons']:
@@ -43,7 +42,7 @@ def make_response(event, text, debug, session_store, end = False):
     for session_butt_instance in session_store['buttons']:
         if session_butt_instance['title'] != 'Да' and session_butt_instance['title'] != 'Нет':
             sort_buttons.append(session_butt_instance)
-
+    
     session_store['buttons'] = sort_buttons
 
     return{
