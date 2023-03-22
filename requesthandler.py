@@ -1,6 +1,6 @@
 from base import *
 import alicehandler
-
+import random
 import string
 import regex
 
@@ -261,7 +261,7 @@ class datarequest():
 
             'как работает карта':       getCardDescription,
             'как работает свойство':    getSkillFromBase  ,
-            'как работает Действие':    getSkillFromBase  ,
+            'как работает действие':    getSkillFromBase  ,
             'что делает карта':         getCardDescription,
             'что делает свойство':      getSkillFromBase  ,
             'что делает действие':      getSkillFromBase  ,
@@ -327,7 +327,7 @@ class datarequest():
                 { "title": "Да", "payload": -4, "hide": True },
                 { "title": "Нет", "payload": -5, "hide": True }
             ]
-            
+            self.debug['incomingFeedback_handler'] = True
             raise Exception(True)
 
     def incomingJoinMainCardDescr_handler(self):
@@ -371,6 +371,8 @@ class datarequest():
                 { "title": "Нет", "payload": 144, "hide": True }
             ]
 
+            self.text = outstr
+            self.debug['joinMain'] = True
             raise Exception(True)
 
     def incomingQuestion_handler(self):
@@ -386,6 +388,7 @@ class datarequest():
                 if arg != None and (("назад" in btn_titles) == False):
                     self.from_Alice = arg
                     self.text = self.requestSamples[key](self)
+                    debug['incomingQuestion'] = True
                     raise Exception(True)
 
     def incomingAcceptOrRejrct_handler(self):
@@ -417,6 +420,7 @@ class datarequest():
                     next_state = int(str(min_distance_item["payload"])[1:-1])
 
                 self.text = alicehandler.set_next_state(self.session_store, next_state)
+                self.debug['AcceptOrRejrct'] = True
                 raise Exception(True)
 
     # возвращаем текст, флаг выхода, отладочную инфу
@@ -425,26 +429,35 @@ class datarequest():
         # инициализация парсера произвольного ввода
         self.bot = bot
         self.session_store = session_store
-        self.text = "Извините, запрос непонятен"
+        self.text = random.choice(["Извините, запрос непонятен", \
+ #                       "Вы не могли бы повторить", \
+ #                       "Извините, что-то со слухом, повторите пожалуста", \
+                        "Не понимаю"])
         self.end = False
         self.debug = {}
         self.incoming_command = req.lower()
         self.incoming_command = regex.sub('[,+-]', '', self.incoming_command)
         self.debug['incoming_cmd'] = str(self.incoming_command)
 
+        self.debug['wtf'] = 0
         try:
+            self.debug['wtf'] = 1
             # проверка ввода для отправки фидбека.
             self.incomingFeedback_handler()
             
+            self.debug['wtf'] = 2
             # громилы / адепты / последователи
-            self.incomingFeedback_handler()
-
+            self.incomingJoinMainCardDescr_handler()
+            
+            self.debug['wtf'] = 3
             # обработка входов в обработчики вопросов
             self.incomingQuestion_handler()
-
+            
+            self.debug['wtf'] = 4
             # обработка кнопок Да/Нет
             self.incomingAcceptOrRejrct_handler()
-
+            
+            self.debug['wtf'] = 5
 
             # если это не ввод фидбека или ветвления и не вопрос
             # то возможно это просто название карты после "не расслышала название карты"
@@ -453,8 +466,10 @@ class datarequest():
             if just_card != "что-то пошло не так. попробуйте ещё раз."\
                 and just_card != "Простите, не расслышала название карты":
                 self.text = just_card
-        
+        except Exception:
+            self.debug['excepted'] = True
         finally:
+            self.debug['fin'] = True
             return self.text, self.end, self.debug, self.session_store
 
 

@@ -234,7 +234,7 @@ def set_next_state(session_store, next_state):
                 "payload": {row[next_states_descr.index('next_out_id')]}, "hide": True })
         text = baseinstance.getStateOut(str(next_state))
         if next_state in immediately_return:
-            text += ' Чтобы вернуться скажите "Назад"'
+            text += 'Чтобы вернуться скажите "Назад"'
     else:
         return "что-то пошло не так. попробуйте ещё раз."
     
