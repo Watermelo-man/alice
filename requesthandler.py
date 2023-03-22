@@ -169,6 +169,66 @@ class datarequest():
             self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 119)
+
+    def howTo_safeLoc(self):
+        if self.session_store['flags']['return_state'] == None:
+            self.session_store['flags']['return_state'] = self.session_store['state']
+
+        return alicehandler.set_next_state(self.session_store, 236)
+
+    def howTo_shop(self):
+        if self.session_store['flags']['return_state'] == None:
+            self.session_store['flags']['return_state'] = self.session_store['state']
+
+        return alicehandler.set_next_state(self.session_store, 234)
+
+    def howTo_buy(self):
+        if self.session_store['flags']['return_state'] == None:
+            self.session_store['flags']['return_state'] = self.session_store['state']
+
+        return alicehandler.set_next_state(self.session_store, 235)
+
+    def howTo_marker(self):
+        if self.session_store['flags']['return_state'] == None:
+            self.session_store['flags']['return_state'] = self.session_store['state']
+
+        return alicehandler.set_next_state(self.session_store, 240)
+
+    def howTo_gatesLoc(self):
+        if self.session_store['flags']['return_state'] == None:
+            self.session_store['flags']['return_state'] = self.session_store['state']
+
+        return alicehandler.set_next_state(self.session_store, 238)
+
+    def howTo_simpleLoc(self):
+        if self.session_store['flags']['return_state'] == None:
+            self.session_store['flags']['return_state'] = self.session_store['state']
+
+        return alicehandler.set_next_state(self.session_store, 237)
+
+    def howTo_mainCards(self):
+        if self.session_store['flags']['return_state'] == None:
+            self.session_store['flags']['return_state'] = self.session_store['state']
+
+        return alicehandler.set_next_state(self.session_store, 241)
+
+    def howTo_selfCards(self):
+        if self.session_store['flags']['return_state'] == None:
+            self.session_store['flags']['return_state'] = self.session_store['state']
+
+        return alicehandler.set_next_state(self.session_store, 242)
+
+    def howTo_droppedCards(self):
+        if self.session_store['flags']['return_state'] == None:
+            self.session_store['flags']['return_state'] = self.session_store['state']
+
+        return alicehandler.set_next_state(self.session_store, 243)
+
+    def howTo_accessedCards(self):
+        if self.session_store['flags']['return_state'] == None:
+            self.session_store['flags']['return_state'] = self.session_store['state']
+
+        return alicehandler.set_next_state(self.session_store, 244)
     
     # def whatCardsAreThere(self):
     #     #TODO: перечислять вообще все карты??
@@ -185,22 +245,38 @@ class datarequest():
         return alicehandler.set_next_state(self.session_store, 106)
 
     requestSamples = {
+            'как работает убежище':         howTo_safeLoc,
+            'как работает магазин':         howTo_shop,
+            'как работает покупка':         howTo_buy,
+            'что такое планшет':            howTo_marker,
+            'как работают врата':           howTo_gatesLoc,
+            'как работает локация':         howTo_simpleLoc,
+            'как работают локация':         howTo_simpleLoc,
+            'как работает здание':          howTo_simpleLoc,
+            'как работают здания':          howTo_simpleLoc,
+            'какие бывают локации':         howTo_simpleLoc,
+            'какие бывают здания':          howTo_simpleLoc,
+            'что такое основная колода':    howTo_mainCards,
+            'что такое личная колода':      howTo_selfCards,
+            'что такое сброс':              howTo_droppedCards,
+            'что такое доступные карты':    howTo_accessedCards,
             'как работает карта':       getCardDescription,
             'как работает свойство':    getSkillFromBase  ,
-            'как работает Действие':    getSkillFromBase  ,
+            'как работает действие':    getSkillFromBase  ,
             'что делает карта':         getCardDescription,
             'что делает свойство':      getSkillFromBase  ,
             'что делает действие':      getSkillFromBase  ,
-            'что такое':                getSkillFromBase  ,
-            'кто такой':                getSkillFromBase  ,
-            'кто такие':                getSkillFromBase  ,
-            'что значит':               getSkillFromBase  ,
-            'как работает':             getCardDescription,
-            'как работают':             getCardDescription,
-            'что делает':               getCardDescription,
-            'что делают':               getCardDescription,
+#            'что такое':                getSkillFromBase  ,
+#            'кто такой':                getSkillFromBase  ,
+#            'кто такие':                getSkillFromBase  ,
+#            'что значит':               getSkillFromBase  ,
+#            'как работает':             getCardDescription,
+#            'как работают':             getCardDescription,
+#            'что делает':               getCardDescription,
+#            'что делают':               getCardDescription,
             'помощь':                   help_f            ,
             'помоги':                   help_f            ,
+            'справка':                  help_f            ,
             'не понимаю':               help_f            ,
             'повтори':                  repeat            ,
             'ещё раз':                  repeat            ,
@@ -210,6 +286,8 @@ class datarequest():
             'написать разработчикам':   feedback          ,
             'отправить разработчику':   feedback          ,
             'отправить разработчикам':  feedback          ,
+            'сказать разработчикам':    feedback          ,
+            'рассказать разработчикам': feedback          ,
             'что ты умеешь':            about             ,
             'расскажи что ты умеешь':   about             ,
             'давай играть':             to_start          ,

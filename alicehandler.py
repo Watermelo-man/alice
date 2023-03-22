@@ -1,3 +1,4 @@
+
 from base import *
 from requesthandler import *
 import telebot
@@ -21,8 +22,29 @@ def send_log(event, text):
 
     bot.send_message(-1001609876238 , msg ,message_thread_id = 453)
 
+
+
+
 def make_response(event, text, debug, session_store, end = False):
     send_log(event, text)
+
+    #сортировка кнопок
+    sort_buttons = []
+
+    for session_butt_instance in session_store['buttons']:
+        if session_butt_instance['title']=='Да':
+            sort_buttons.append(session_butt_instance)
+
+    for session_butt_instance in session_store['buttons']:
+        if session_butt_instance['title'] == 'Нет':
+            sort_buttons.append(session_butt_instance)
+
+    for session_butt_instance in session_store['buttons']:
+        if session_butt_instance['title'] != 'Да' and session_butt_instance['title'] != 'Нет':
+            sort_buttons.append(session_butt_instance)
+    
+    session_store['buttons'] = sort_buttons
+
     return{
             'version': event['version'],
             'session': event['session'],
@@ -198,7 +220,8 @@ def set_next_state(session_store, next_state):
         session_store['flags']['commandhandler'] = 'about_app'
         session_store['flags']['return_state'] = 99
 
-    if next_state == 126:
+    immediately_return = [126, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244]
+    if next_state in immediately_return:
         buttons.append({ "title": "Назад", "payload": session_store['flags']['return_state'], "hide": True })
 
     # добавление кнопок из базы
@@ -210,6 +233,8 @@ def set_next_state(session_store, next_state):
                 buttons.append({ "title": row[next_states_descr.index('input_text')],
                 "payload": {row[next_states_descr.index('next_out_id')]}, "hide": True })
         text = baseinstance.getStateOut(str(next_state))
+        if next_state in immediately_return:
+            text += ' Чтобы вернуться скажите "Назад"'
     else:
         return "что-то пошло не так. попробуйте ещё раз."
     
@@ -267,3 +292,4 @@ def handler(event,context):
     # list_arg = Datarequest.scanRequest(request)
 
     # return make_response(event, list_arg[0], list_arg, None, list_arg[1])
+
