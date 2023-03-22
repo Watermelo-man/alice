@@ -85,7 +85,7 @@ def session_start_handler(event):
                 'from_about': False,
                 'commandhandler' : None,
                 'return_state' : None,
-                'prev_state' : None,
+                'prev_state' : start_state,
                 'custom_repeat' : None,
                 'last_card_name' : None,
                 'game_context': "hello"
@@ -102,7 +102,7 @@ def set_next_state(session_store, next_state):
 
     no_back = [0, -1, -2, -3, -4, -5, -10]
 
-    if next_state in no_back:
+    if prev_state in no_back:
         session_store['flags']['prev_state'] = None
     else:
         session_store['flags']['prev_state'] = prev_state

@@ -69,7 +69,8 @@ class datarequest():
             if self.session_store['flags']['commandhandler'] == "about_app":
                 self.session_store['flags']['from_about'] = True
             self.session_store['flags']['commandhandler'] = "card_info"
-            if self.session_store['flags']['return_state'] == None:
+            if self.session_store['flags']['return_state'] == None\
+                and self.session_store['state'] > 1:
                 self.session_store['flags']['return_state'] = self.session_store['state']
 
             text = baseinstance.getCardDescFrombase(card_name)
@@ -90,7 +91,8 @@ class datarequest():
         
         prev_state = self.session_store['state']
 
-        if self.session_store['flags']['return_state'] != None:
+        if self.session_store['flags']['return_state'] == None\
+                and self.session_store['state'] > 1:
             prev_state = self.session_store['flags']['return_state']
 
         buttons = [
@@ -104,7 +106,8 @@ class datarequest():
         baseinstance = Base()
         if baseinstance.connect():
             self.session_store['flags']['commandhandler'] = "card_info"
-            if self.session_store['flags']['return_state'] == None:
+            if self.session_store['flags']['return_state'] == None\
+                and self.session_store['state'] > 1:
                 self.session_store['flags']['return_state'] = self.session_store['state']
 
             text = baseinstance.getSkillDescFrombase(card_name)
@@ -123,7 +126,9 @@ class datarequest():
         baseinstance = Base()
         if baseinstance.connect():
             self.session_store['flags']['commandhandler'] = "help"
-            self.session_store['flags']['return_state'] = self.session_store['state']
+            if self.session_store['flags']['return_state'] == None\
+                and self.session_store['state'] > 1:
+                self.session_store['flags']['return_state'] = self.session_store['state']
             
             text = baseinstance.getStateOut(118)
             self.session_store['buttons'] = [ { "title": "Назад", "payload": self.session_store['state'], "hide": True } ]
@@ -131,7 +136,8 @@ class datarequest():
         return text
 
     def card_example(self):
-        if self.session_store['flags']['return_state'] == None:
+        if self.session_store['flags']['return_state'] == None\
+            and self.session_store['state'] > 1:
             self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 124)
@@ -158,74 +164,86 @@ class datarequest():
 
     def feedback(self):
         self.session_store['flags']['commandhandler'] = "feedback"
-        if self.session_store['flags']['return_state'] == None:
+        if self.session_store['flags']['return_state'] == None\
+            and self.session_store['state'] > 1:
             self.session_store['flags']['return_state'] = self.session_store['state']
         self.session_store['state'] = 123
         return "Расскажите что нужно передать."
 
     def about(self):
         self.session_store['flags']['commandhandler'] = "about_app"
-        if self.session_store['flags']['return_state'] == None:
+        if self.session_store['flags']['return_state'] == None\
+            and self.session_store['state'] > 1:
             self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 119)
 
     def howTo_safeLoc(self):
-        if self.session_store['flags']['return_state'] == None:
+        if self.session_store['flags']['return_state'] == None\
+            and self.session_store['state'] > 1:
             self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 236)
 
     def howTo_shop(self):
-        if self.session_store['flags']['return_state'] == None:
+        if self.session_store['flags']['return_state'] == None\
+            and self.session_store['state'] > 1:
             self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 234)
 
     def howTo_buy(self):
-        if self.session_store['flags']['return_state'] == None:
+        if self.session_store['flags']['return_state'] == None\
+            and self.session_store['state'] > 1:
             self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 235)
 
     def howTo_marker(self):
-        if self.session_store['flags']['return_state'] == None:
+        if self.session_store['flags']['return_state'] == None\
+            and self.session_store['state'] > 1:
             self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 240)
 
     def howTo_gatesLoc(self):
-        if self.session_store['flags']['return_state'] == None:
+        if self.session_store['flags']['return_state'] == None\
+            and self.session_store['state'] > 1:
             self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 238)
 
     def howTo_simpleLoc(self):
-        if self.session_store['flags']['return_state'] == None:
+        if self.session_store['flags']['return_state'] == None\
+            and self.session_store['state'] > 1:
             self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 237)
 
     def howTo_mainCards(self):
-        if self.session_store['flags']['return_state'] == None:
+        if self.session_store['flags']['return_state'] == None\
+            and self.session_store['state'] > 1:
             self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 241)
 
     def howTo_selfCards(self):
-        if self.session_store['flags']['return_state'] == None:
+        if self.session_store['flags']['return_state'] == None\
+            and self.session_store['state'] > 1:
             self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 242)
 
     def howTo_droppedCards(self):
-        if self.session_store['flags']['return_state'] == None:
+        if self.session_store['flags']['return_state'] == None\
+            and self.session_store['state'] > 1:
             self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 243)
 
     def howTo_accessedCards(self):
-        if self.session_store['flags']['return_state'] == None:
+        if self.session_store['flags']['return_state'] == None\
+            and self.session_store['state'] > 1:
             self.session_store['flags']['return_state'] = self.session_store['state']
 
         return alicehandler.set_next_state(self.session_store, 244)
@@ -246,19 +264,26 @@ class datarequest():
 
     requestSamples = {
             'как работает убежище':         howTo_safeLoc,
+            'что такое убежище':         howTo_shop,
             'как работает магазин':         howTo_shop,
+            'что такое магазин':         howTo_shop,
             'как работает покупка':         howTo_buy,
             'что такое планшет':            howTo_marker,
+            'как работает планшет':            howTo_marker,
             'как работают врата':           howTo_gatesLoc,
+            'что такое врата':           howTo_gatesLoc,
             'как работает локация':         howTo_simpleLoc,
             'как работают локация':         howTo_simpleLoc,
+            'что такое локация':         howTo_simpleLoc,
             'как работает здание':          howTo_simpleLoc,
+            'как работают здания':          howTo_simpleLoc,
             'как работают здания':          howTo_simpleLoc,
             'какие бывают локации':         howTo_simpleLoc,
             'какие бывают здания':          howTo_simpleLoc,
             'что такое основная колода':    howTo_mainCards,
             'что такое личная колода':      howTo_selfCards,
             'что такое сброс':              howTo_droppedCards,
+            'как работает сброс':              howTo_droppedCards,
             'что такое доступные карты':    howTo_accessedCards,
             'как работает карта':       getCardDescription,
             'как работает свойство':    getSkillFromBase  ,
@@ -401,10 +426,11 @@ class datarequest():
                 args[key] = arg
 
                 debug['is subflow start'] = True
-                if arg != None and (("назад" in btn_titles) == False):
-                    self.from_Alice = arg
-                    text = self.requestSamples[key](self)
-                    return text, end, debug, self.session_store
+                if arg != None:# and (("назад" in btn_titles) == False):
+                    if not(("назад" in btn_titles) and (key == "назад")):
+                        self.from_Alice = arg
+                        text = self.requestSamples[key](self)
+                        return text, end, debug, self.session_store
 
         self.from_Alice = incoming_command
         just_card = self.getCardDescription()
