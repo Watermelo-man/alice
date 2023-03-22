@@ -351,6 +351,8 @@ class datarequest():
         text = "Извините, запрос непонятен"
         end = False
         debug = {}
+        if req == None or req == '':
+            return  self.repeat(), False, debug, self.session_store
 
         incoming_command = req.lower()
         incoming_command = regex.sub('[,+-]', '', incoming_command)

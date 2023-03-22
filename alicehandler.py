@@ -97,6 +97,7 @@ def session_start_handler(event):
     return False, {}
 
 def set_next_state(session_store, next_state):
+
     buttons = []
     prev_state = session_store['state']
 
@@ -244,6 +245,7 @@ def set_next_state(session_store, next_state):
 
 
 def button_clicked_handler(event, session_store):
+
     if event['request']['type'] != "ButtonPressed":
         return False, {}
 
@@ -260,15 +262,49 @@ def button_clicked_handler(event, session_store):
 
 # start point
 def handler(event,context):
+        
+    if  'request' in event and \
+        'original_utterance' in event['request'] and \
+        event['request']['original_utterance'] != '' and\
+        event['request']['original_utterance'] == "ping":
+
+        return  {
+                    'version': 1,
+                    'session': 1,
+                    'response': {
+                        'text': "pong",
+                        'end_session': True
+                    }
+                }
+
     # обработка входа в сценарий
     ok, response = session_start_handler(event)
     if ok: return response
 
     session_store = event['state']['session']
+    # if  'request' in event and\
+    #     'command' in event['request'] and\
+    #     event['request']['command'] == '':
+        
+    #     if not 'buttons' in session_store:
+    #         session_store['buttons'] = []
+
+    #     return {
+    #                 'version': event['version'],
+    #                 'session': event['session'],
+    #                 'session_state': session_store,
+    #                 'response': {
+    #                     'text': text,
+    #                     'buttons': session_store['buttons'],
+    #                     'end_session': False
+    #                 },
+    #                 'debug' : {}
+    #             }
+
     # обработка нажатия кнопок
     ok, response = button_clicked_handler(event, session_store)
     if ok: return response
-
+        
     #обработка произвольного ввода        
     request = event['request']['command']
     tokens = event['request']['nlu']['tokens']
