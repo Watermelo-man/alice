@@ -220,7 +220,8 @@ def set_next_state(session_store, next_state):
         session_store['flags']['commandhandler'] = 'about_app'
         session_store['flags']['return_state'] = 99
 
-    if next_state == 126:
+    immediately_return = [126, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244]
+    if next_state in immediately_return:
         buttons.append({ "title": "Назад", "payload": session_store['flags']['return_state'], "hide": True })
 
     # добавление кнопок из базы
