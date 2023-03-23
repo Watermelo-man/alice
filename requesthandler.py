@@ -373,7 +373,7 @@ class datarequest():
             ]
 
             return text, end, debug, self.session_store
-        
+
         keystates = [139, 163, 187, 189, 195, 214, 230]
         # громилы / адепты / последователи
         if self.session_store['state'] in keystates:
@@ -447,6 +447,11 @@ class datarequest():
 
         in_accepted = card_recognition(self.accepted, incoming_command)
         in_rejected = card_recognition(self.rejected, incoming_command)
+        is_2 = card_recognition(["2", "два", "двое", "вдвоём"], incoming_command)
+        is_3 = card_recognition(["3", "три", "трое", "втроём"], incoming_command)
+        is_4 = card_recognition(["4", "четыре", "четверо", "вчетвером"], incoming_command)
+
+        #if self.session_store['state'] == 131:
 
         debug['in_accepted'] = in_accepted
         debug['in_rejected'] = in_rejected
@@ -457,7 +462,10 @@ class datarequest():
 
             for btn in self.session_store['buttons']:
                 if (in_accepted != "" and btn['title'].lower() in self.accepted) or \
-                    (in_rejected != "" and btn['title'].lower() in self.rejected):
+                    (in_rejected != "" and btn['title'].lower() in self.rejected) or \
+                    (is_2 != "" and btn['title'].lower() == "двое") or \
+                    (is_3 != "" and btn['title'].lower() == "трое") or \
+                    (is_4 != "" and btn['title'].lower() == "четверо"):
                     min_distance = 0
                     min_distance_item = btn
                     break

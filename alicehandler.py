@@ -15,15 +15,12 @@ def send_log(event, text):
     if 'command' in event['request']:
         msg += "request: " + str(event['request']['command']) + "\n\n"
     else:
-        msg += "request: button pushed"
+        msg += "request: button pushed\n\n"
     msg += "response: "+ str(text) + "\n\n"
     msg += "current_state=" + str(event['state']['session']['state'])
     #msg += "\n\ndebug: "+ str(debug)
 
     bot.send_message(-1001609876238 , msg ,message_thread_id = 453)
-
-
-
 
 def make_response(event, text, debug, session_store, end = False):
     send_log(event, text)
