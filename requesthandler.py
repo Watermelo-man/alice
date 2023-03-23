@@ -301,6 +301,8 @@ class datarequest():
 #            'что делают':               getCardDescription,
             'помощь':                   help_f            ,
             'помоги':                   help_f            ,
+            'алиса помоги':             help_f            ,
+            'алиса помощь':             help_f            ,
             'справка':                  help_f            ,
             'не понимаю':               help_f            ,
             'повтори':                  repeat            ,
