@@ -168,8 +168,22 @@ class datarequest():
         if self.session_store['flags']['return_state'] == None\
             and self.session_store['state'] > 1:
             self.session_store['flags']['return_state'] = self.session_store['state']
-        self.session_store['state'] = 123
-        return "Расскажите что нужно передать."
+
+        text = "Расскажите что нужно передать."
+        self.session_store['buttons'] = []
+
+        if self.from_Alice != None and self.from_Alice != "":
+            self.session_store['flags']['feedback'] = self.from_Alice
+            text = "Повторяю. " + self.from_Alice + '. Отправляем?'
+            self.session_store['state'] = -3
+            self.session_store['buttons'] = [
+                { "title": "Да", "payload": -4, "hide": True },
+                { "title": "Нет", "payload": -5, "hide": True }
+            ]
+
+        else:
+            self.session_store['state'] = 123
+        return text
 
     def about(self):
         self.session_store['flags']['commandhandler'] = "about_app"
